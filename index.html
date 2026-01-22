@@ -142,26 +142,22 @@
     </div>
 
     <div class="section-container">
-        <h2>2. L'Infini Borné : Le Flocon de Koch</h2>
-        <p>En appliquant cette transformation sur les trois côtés d'un triangle, on obtient le Flocon. Notez que l'aire reste finie, mais son périmètre augmente à chaque étape.</p>
+        <h2>2. L'Infini Borné : La Construction de l'Étoile</h2>
+        <p>Cette simulation montre les premières étapes de la construction d'une fractale en forme d'étoile, similaire à celle de l'image fournie.</p>
         
-        <canvas id="kochCanvas" width="600" height="600"></canvas>
+        <canvas id="customFractalCanvas" width="600" height="600"></canvas>
 
         <div class="controls">
             <div class="slider-header">
-                <label>Itérations (n)</label>
-                <span id="kochIterVal">0</span>
+                <label>Étape</label>
+                <span id="customIterVal">0</span>
             </div>
-            <input type="range" id="kochIterations" min="0" max="5" value="0" step="1">
+            <input type="range" id="customIterations" min="0" max="2" value="0" step="1">
 
-            <div class="stats">
+            <div class="stats single">
                 <div class="stat-box">
-                    <div class="stat-value" id="kochSegmentsDisplay">3</div>
-                    <div class="stat-label">Nombre de segments</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value highlight-blue" id="kochLengthDisplay">100 unités</div>
-                    <div class="stat-label">Périmètre Théorique</div>
+                    <div class="stat-value" id="customStats">Triangle Initial</div>
+                    <div class="stat-label">Description</div>
                 </div>
             </div>
         </div>
@@ -311,53 +307,71 @@
 
 
         /* =========================================
-           2. LE FLOCON DE KOCH (Triangle complet)
+           2. CONSTRUCTION DE L'ÉTOILE (Image fournie)
            ========================================= */
-        const kCanvas = document.getElementById('kochCanvas');
-        const kCtx = kCanvas.getContext('2d');
-        const kSlider = document.getElementById('kochIterations');
-        
-        function drawKoch() {
-            const iter = parseInt(kSlider.value);
-            document.getElementById('kochIterVal').textContent = iter;
-            kCtx.clearRect(0,0, kCanvas.width, kCanvas.height);
+        const cCanvas = document.getElementById('customFractalCanvas');
+        const cCtx = cCanvas.getContext('2d');
+        const cSlider = document.getElementById('customIterations');
+        const cStats = document.getElementById('customStats');
 
-            const w = kCanvas.width;
-            const h = kCanvas.height;
-            // Taille responsive
-            const size = Math.min(w, h) * 0.55; 
-            const heightTri = size * Math.sqrt(3)/2;
-            const cx = w / 2;
-            const cy = h / 2 + heightTri / 6; 
-
-            // Définition du triangle initial (pointe en bas)
-            // On trace dans le sens trigo (anti-horaire) pour que la règle "à gauche" pointe vers l'extérieur
-            const p1 = {x: cx - size/2, y: cy - heightTri/3}; // Haut Gauche
-            const p2 = {x: cx, y: cy + 2*heightTri/3};       // Bas Pointe
-            const p3 = {x: cx + size/2, y: cy - heightTri/3}; // Haut Droite
-
-            const side1 = getKochPoints(p1, p2, iter);
-            const side2 = getKochPoints(p2, p3, iter);
-            const side3 = getKochPoints(p3, p1, iter);
-
-            const allPoints = [...side1, ...side2, ...side3];
-
-            kCtx.beginPath();
-            kCtx.strokeStyle = "#4cc9f0";
-            kCtx.lineWidth = 1.5;
-            kCtx.moveTo(allPoints[0].x, allPoints[0].y);
-            for(let p of allPoints) kCtx.lineTo(p.x, p.y);
-            kCtx.closePath();
-            kCtx.stroke();
-
-            // Stats avec correction "unités"
-            const theoreticalLen = 100 * Math.pow(4/3, iter);
-            const numSeg = 3 * Math.pow(4, iter);
-            document.getElementById('kochSegmentsDisplay').textContent = new Intl.NumberFormat().format(numSeg);
-            document.getElementById('kochLengthDisplay').textContent = theoreticalLen.toFixed(1) + " unités";
+        function drawTriangle(ctx, x, y, size, rotation, color) {
+            ctx.beginPath();
+            ctx.moveTo(x + size * Math.cos(rotation), y + size * Math.sin(rotation));
+            ctx.lineTo(x + size * Math.cos(rotation + 2 * Math.PI / 3), y + size * Math.sin(rotation + 2 * Math.PI / 3));
+            ctx.lineTo(x + size * Math.cos(rotation + 4 * Math.PI / 3), y + size * Math.sin(rotation + 4 * Math.PI / 3));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
         }
-        kSlider.addEventListener('input', drawKoch);
-        drawKoch();
+
+        function drawCustomFractal() {
+            const iter = parseInt(cSlider.value);
+            document.getElementById('customIterVal').textContent = iter;
+            cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+
+            const w = cCanvas.width;
+            const h = cCanvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const size1 = Math.min(w, h) * 0.4;
+            const size2 = size1 * 1.2; // Second triangle is slightly larger
+            const size3 = size1 / 3; // Smaller triangles
+
+            let description = "";
+
+            if (iter >= 0) {
+                // Étape 0: Premier triangle gris clair, pointe en haut
+                drawTriangle(cCtx, cx, cy + size1 / 6, size1, -Math.PI / 2, '#999999');
+                description = "Triangle Initial";
+            }
+
+            if (iter >= 1) {
+                // Étape 1: Deuxième triangle gris foncé, pointe en bas
+                drawTriangle(cCtx, cx, cy - size2 / 6, size2, Math.PI / 2, '#555555');
+                description = "Étoile à Six Branches";
+            }
+
+            if (iter >= 2) {
+                // Étape 2: Petits triangles gris foncé sur les pointes
+                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
+                const distances = [size1, size2, size1, size2, size1, size2];
+                
+                for (let i = 0; i < 6; i++) {
+                    const angle = angles[i];
+                    // Adjust distance and center for the small triangles to sit on the tips
+                    const dist = distances[i];
+                    // The small triangles are centered on the vertices of the previous star
+                    const tx = cx + dist * Math.cos(angle);
+                    const ty = (cy + (i % 2 === 0 ? size1 / 6 : -size2 / 6)) + dist * Math.sin(angle);
+                    // Rotation is opposite to the vertex they are on
+                    drawTriangle(cCtx, tx, ty, size3, angle + Math.PI, '#555555');
+                }
+                description = "Fractale en Étoile";
+            }
+            cStats.textContent = description;
+        }
+        cSlider.addEventListener('input', drawCustomFractal);
+        drawCustomFractal();
 
 
         /* =========================================
@@ -528,7 +542,7 @@
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-                drawSegment(); drawKoch();
+                drawSegment(); drawCustomFractal();
                 generateBetterIsland(); runIslandMeasurement();
                 generateGBPoints(); runGBMeasurement();
             }, 250);
