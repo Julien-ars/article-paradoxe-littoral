@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Laboratoire Interactif Finale</title>
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif V7</title>
     <style>
         /* --- STYLE THEME SOMBRE (CSS) --- */
         :root {
@@ -193,7 +193,7 @@
 
      <div class="section-container">
         <h2>4. Le Cas Réel : La Grande-Bretagne</h2>
-        <p>Le paradoxe appliqué à une vraie carte. Plus la règle est petite, plus elle entre dans les fjords et les baies, augmentant considérablement le résultat final.</p>
+        <p>Le paradoxe appliqué à une vraie carte haute résolution. Plus la règle est petite, plus elle entre dans les fjords et les baies, augmentant considérablement le résultat final.</p>
         
         <canvas id="gbCanvas" width="600" height="650"></canvas>
 
@@ -226,93 +226,43 @@
             return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
         }
 
-        /* Fonction qui calcule les points d'un flocon de Koch (Outline) */
-        function getKochPointsOutline(p1, p2, iterations) {
-            if (iterations === 0) return [p1, p2];
-
-            const vx = p2.x - p1.x;
-            const vy = p2.y - p1.y;
-            
-            const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
-            const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
-            
-            // Rotation +60 deg pour sortir (Si tracé CCW)
-            const cos60 = 0.5;
-            const sin60 = Math.sqrt(3)/2; 
-            
-            // Vecteur pA -> pB
-            const vABx = pB.x - pA.x;
-            const vABy = pB.y - pA.y;
-
-            // Rotation
-            const rotX = vABx * cos60 - vABy * sin60;
-            const rotY = vABx * sin60 + vABy * cos60;
-
-            const pTip = { x: pA.x + rotX, y: pA.y + rotY };
-
-            const seg1 = getKochPointsOutline(p1, pA, iterations - 1);
-            const seg2 = getKochPointsOutline(pA, pTip, iterations - 1);
-            const seg3 = getKochPointsOutline(pTip, pB, iterations - 1);
-            const seg4 = getKochPointsOutline(pB, p2, iterations - 1);
-
-            return [...seg1, ...seg2.slice(1), ...seg3.slice(1), ...seg4.slice(1)];
-        }
-
-
         /* =========================================
-           1. LE SEGMENT DE KOCH (Ligne Simple)
+           1. LE SEGMENT DE KOCH
            ========================================= */
         const sCanvas = document.getElementById('segmentCanvas');
         const sCtx = sCanvas.getContext('2d');
         const sSlider = document.getElementById('segmentIterations');
         
+        // Fonction locale pour le segment seul qui pointe vers le haut
+        function getSegPointsUp(p1, p2, n) {
+            if (n === 0) return [p1, p2];
+            const vx = p2.x - p1.x, vy = p2.y - p1.y;
+            const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
+            const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
+            // Rotation -60 deg (vers le haut)
+            const c = 0.5, s = -Math.sqrt(3)/2;
+            const vBaseX = pB.x - pA.x, vBaseY = pB.y - pA.y;
+            const tip = {
+                x: pA.x + (vBaseX * c - vBaseY * s),
+                y: pA.y + (vBaseX * s + vBaseY * c)
+            };
+            return [...getSegPointsUp(p1, pA, n-1), ...getSegPointsUp(pA, tip, n-1), ...getSegPointsUp(tip, pB, n-1), ...getSegPointsUp(pB, p2, n-1)];
+        }
+
         function drawSegment() {
             const iter = parseInt(sSlider.value);
             document.getElementById('segIterVal').textContent = iter;
             sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
-            
-            const w = sCanvas.width;
-            const h = sCanvas.height;
-            // On inverse les points start/end pour que la "gauche" (Left) soit vers le haut
-            // Sinon le +60deg pointe vers le bas.
-            // Start a gauche, End a droite.
+            const w = sCanvas.width, h = sCanvas.height;
             const start = {x: w * 0.1, y: h * 0.75}; 
             const end = {x: w * 0.9, y: h * 0.75};
-            
-            // Pour un segment seul, on triche un peu sur la rotation ou on prend la fonction Outline
-            // Avec ma fonction Outline +60, sur un segment gauche->droite, ça monte (car Y inversé, +angle = CW visuel ? Non)
-            // Verifions visuellement :
-            // HTML Canvas Y est vers le bas.
-            // Vecteur (1,0). Rot +60 => (0.5, 0.866). Y positif = BAS.
-            // Donc sur le canvas, +60 fait pointer vers le BAS.
-            // Pour pointer vers le HAUT, il faut -60.
-            
-            // Je fais une version locale pour le segment seul qui pointe vers le haut
-            function getSegPointsUp(p1, p2, n) {
-                if (n === 0) return [p1, p2];
-                const vx = p2.x - p1.x, vy = p2.y - p1.y;
-                const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
-                const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
-                
-                // Rotation -60 deg (vers le haut)
-                const c = 0.5, s = -Math.sqrt(3)/2;
-                const vBaseX = pB.x - pA.x, vBaseY = pB.y - pA.y;
-                const tip = {
-                    x: pA.x + (vBaseX * c - vBaseY * s),
-                    y: pA.y + (vBaseX * s + vBaseY * c)
-                };
-                return [...getSegPointsUp(p1, pA, n-1), ...getSegPointsUp(pA, tip, n-1), ...getSegPointsUp(tip, pB, n-1), ...getSegPointsUp(pB, p2, n-1)];
-            }
-
             const points = getSegPointsUp(start, end, iter);
-
             sCtx.beginPath();
             sCtx.strokeStyle = "#4cc9f0";
             sCtx.lineWidth = 2;
             sCtx.moveTo(points[0].x, points[0].y);
             for(let i=1; i<points.length; i++) sCtx.lineTo(points[i].x, points[i].y);
             sCtx.stroke();
-
             const numSeg = Math.pow(4, iter);
             document.getElementById('segCountDisplay').textContent = new Intl.NumberFormat().format(numSeg);
         }
@@ -321,7 +271,7 @@
 
 
         /* =========================================
-           2. CONSTRUCTION EN COUCHES (VISUEL REMPLI)
+           2. CONSTRUCTION EN COUCHES
            ========================================= */
         const lCanvas = document.getElementById('layeredCanvas');
         const lCtx = lCanvas.getContext('2d');
@@ -332,98 +282,45 @@
             const maxIter = parseInt(lSlider.value);
             document.getElementById('layeredIterVal').textContent = maxIter;
             lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
-
-            const w = lCanvas.width;
-            const h = lCanvas.height;
+            const w = lCanvas.width, h = lCanvas.height;
             const size = Math.min(w, h) * 0.55; 
             const heightTri = size * Math.sqrt(3)/2;
-            const cx = w / 2;
-            const cy = h / 2 + heightTri / 6; 
-
-            // Triangle initial (Pointe en BAS pour que les ajouts aillent vers le HAUT/EXTERIEUR)
-            // Définition en sens anti-horaire (CCW) : p1(HautD) -> p2(HautG) -> p3(Bas) ?
-            // On veut le triangle gris de base "pointe en haut".
-            // Donc p1(BasG), p2(BasD), p3(Haut).
+            const cx = w / 2, cy = h / 2 + heightTri / 6; 
             
             const p1 = {x: cx - size/2, y: cy + heightTri/3}; // Bas Gauche
             const p2 = {x: cx + size/2, y: cy + heightTri/3}; // Bas Droite
             const p3 = {x: cx, y: cy - 2*heightTri/3};       // Haut Pointe
 
-            // Liste initiale des segments
-            // Si on parcourt p1->p2->p3->p1 (CCW), l'intérieur est à gauche.
-            // L'extérieur est à Droite.
-            // Dans le Canvas (Y vers bas), Rotation Droite = +Angle.
-            // Vérif: p1->p2 est horizontal droit (1,0). Rot +60 => (0.5, 0.866) => Bas.
-            // Oups. Si le triangle est pointe en haut, le segment p1->p2 est en bas.
-            // L'extérieur est en BAS. Donc +60 est correct.
-            
-            let segments = [
-                {a: p1, b: p2},
-                {a: p2, b: p3},
-                {a: p3, b: p1}
-            ];
+            let segments = [{a: p1, b: p2}, {a: p2, b: p3}, {a: p3, b: p1}];
 
-            // 1. Dessiner la base (Iter 0)
-            lCtx.fillStyle = "#2c3e50"; // Couleur sombre de base (Gris/Bleu foncé)
+            // Base (Iter 0)
+            lCtx.fillStyle = "#2c3e50";
             lCtx.beginPath();
-            lCtx.moveTo(p1.x, p1.y);
-            lCtx.lineTo(p2.x, p2.y);
-            lCtx.lineTo(p3.x, p3.y);
-            lCtx.closePath();
-            lCtx.fill();
-            lCtx.strokeStyle = "#4cc9f0";
-            lCtx.lineWidth = 1;
-            lCtx.stroke();
+            lCtx.moveTo(p1.x, p1.y); lCtx.lineTo(p2.x, p2.y); lCtx.lineTo(p3.x, p3.y);
+            lCtx.closePath(); lCtx.fill();
+            lCtx.strokeStyle = "#4cc9f0"; lCtx.lineWidth = 1; lCtx.stroke();
 
-            // Boucle pour chaque itération demandée
-            // On dessine les triangles "par dessus"
+            // Couches suivantes
             for (let i = 0; i < maxIter; i++) {
                 let nextSegments = [];
-                
-                // Couleur différente pour chaque couche
-                // On éclaircit la couleur à chaque étape pour l'effet "Neige"
-                // Etape 0: Base foncée. Etape 1: plus clair...
                 const lightness = 40 + (i * 15);
                 lCtx.fillStyle = `hsl(200, 70%, ${lightness}%)`; 
-                
-                lCtx.beginPath(); // On commence un path pour tous les triangles de cette étape
-                
+                lCtx.beginPath(); 
                 for (let seg of segments) {
-                    const u = seg.a;
-                    const v = seg.b;
-                    
-                    const vx = v.x - u.x;
-                    const vy = v.y - u.y;
-
+                    const u = seg.a, v = seg.b;
+                    const vx = v.x - u.x, vy = v.y - u.y;
                     const pA = {x: u.x + vx/3, y: u.y + vy/3};
                     const pB = {x: u.x + 2*vx/3, y: u.y + 2*vy/3};
-
-                    // Calcul de la pointe du triangle équilatéral sortant
-                    // Rotation +60 deg (car parcours CCW et Canvas Y inversé)
-                    const c = 0.5;
-                    const s = Math.sqrt(3)/2; // +sin60
-                    
+                    // Rotation +60 deg (CCW, Y inversé -> extérieur)
+                    const c = 0.5, s = Math.sqrt(3)/2; 
                     const tipX = pA.x + (pB.x - pA.x)*c - (pB.y - pA.y)*s;
                     const tipY = pA.y + (pB.x - pA.x)*s + (pB.y - pA.y)*c;
                     const pTip = {x: tipX, y: tipY};
-
-                    // Ajouter ce triangle au chemin de dessin
-                    lCtx.moveTo(pA.x, pA.y);
-                    lCtx.lineTo(pB.x, pB.y);
-                    lCtx.lineTo(pTip.x, pTip.y);
-                    lCtx.lineTo(pA.x, pA.y); // Fermer
-
-                    // Préparer les segments pour la prochaine itération
-                    // Le segment u->v devient 4 segments : u->pA, pA->pTip, pTip->pB, pB->v
-                    nextSegments.push({a: u, b: pA});
-                    nextSegments.push({a: pA, b: pTip});
-                    nextSegments.push({a: pTip, b: pB});
-                    nextSegments.push({a: pB, b: v});
+                    lCtx.moveTo(pA.x, pA.y); lCtx.lineTo(pB.x, pB.y); lCtx.lineTo(pTip.x, pTip.y); lCtx.lineTo(pA.x, pA.y);
+                    nextSegments.push({a: u, b: pA}); nextSegments.push({a: pA, b: pTip});
+                    nextSegments.push({a: pTip, b: pB}); nextSegments.push({a: pB, b: v});
                 }
-                
-                lCtx.fill();
-                lCtx.stroke(); // Garder un contour pour la netteté
-                
+                lCtx.fill(); lCtx.stroke();
                 segments = nextSegments;
             }
 
@@ -438,7 +335,7 @@
 
 
         /* =========================================
-           3. L'ÎLE ALÉATOIRE & MESURE
+           3. L'ÎLE ALÉATOIRE & MESURE (Plus variée)
            ========================================= */
         const iCanvas = document.getElementById('islandCanvas');
         const iCtx = iCanvas.getContext('2d');
@@ -447,21 +344,27 @@
 
         function generateBetterIsland() {
             islandPoints = [];
-            const w = iCanvas.width;
-            const h = iCanvas.height;
-            const centerX = w / 2;
-            const centerY = h / 2;
+            const w = iCanvas.width; const h = iCanvas.height;
+            const centerX = w / 2; const centerY = h / 2;
             const baseRadius = Math.min(w, h) * 0.25;
-            const noiseAmp = baseRadius * 0.6; 
+            // Amplitude de base variable
+            const noiseAmp = baseRadius * (0.5 + Math.random() * 0.3); 
             const numPoints = 1200; 
-            const seeds = [Math.random(), Math.random(), Math.random(), Math.random()];
+            
+            // On randomise les fréquences principales pour changer la forme globale
+            const f1 = 2 + Math.floor(Math.random() * 4); // Entre 2 et 5 lobes principaux
+            const f2 = 7 + Math.floor(Math.random() * 6); // Fréquence moyenne
+            
+            // On randomise les phases
+            const seeds = [Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI];
             
             for (let i = 0; i < numPoints; i++) {
                 const angle = (Math.PI * 2 * i) / numPoints;
-                let noise = Math.sin(angle * 3 + seeds[0]) * noiseAmp +
-                            Math.sin(angle * 10 + seeds[1]) * (noiseAmp*0.5) +
-                            Math.sin(angle * 25 + seeds[2]) * (noiseAmp*0.25) +
-                            Math.sin(angle * 60 + seeds[3]) * (noiseAmp*0.1);
+                // Mélange des fréquences aléatoires et fixes pour le détail
+                let noise = Math.sin(angle * f1 + seeds[0]) * noiseAmp +
+                            Math.sin(angle * f2 + seeds[1]) * (noiseAmp*0.5) +
+                            Math.sin(angle * 25 + seeds[2]) * (noiseAmp*0.2) +
+                            Math.sin(angle * 63 + seeds[3]) * (noiseAmp*0.05);
 
                 const r = baseRadius + noise;
                 islandPoints.push({x: centerX + r * Math.cos(angle), y: centerY + r * Math.sin(angle)});
@@ -471,11 +374,9 @@
         function measurePoly(points, rulerLen, ctx, w, h, scale=1, unit="px", filled=false) {
             if(points.length < 2) return;
             ctx.clearRect(0,0,w,h);
-
             ctx.beginPath();
             if(filled) ctx.fillStyle = "#1e2a38";
-            ctx.strokeStyle = "#4895ef"; 
-            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#4895ef"; ctx.lineWidth = 1.5;
             ctx.moveTo(points[0].x, points[0].y);
             for(let p of points) ctx.lineTo(p.x, p.y);
             ctx.closePath();
@@ -483,42 +384,32 @@
             ctx.stroke();
 
             let mPoints = [points[0]];
-            let currIdx = 0;
-            let totalDist = 0;
+            let currIdx = 0; let totalDist = 0;
             while(true) {
                 let found = false;
                 for(let i = currIdx + 1; i < points.length; i++) {
                     let d = dist(points[currIdx], points[i]);
                     if (d >= rulerLen) {
-                        totalDist += d;
-                        mPoints.push(points[i]);
-                        currIdx = i;
-                        found = true;
-                        break;
+                        totalDist += d; mPoints.push(points[i]);
+                        currIdx = i; found = true; break;
                     }
                 }
                 if(!found) {
                     let dFinal = dist(points[currIdx], points[0]);
                     if(dFinal >= rulerLen * 0.5 || mPoints.length > 3) { 
-                        totalDist += dFinal;
-                        mPoints.push(points[0]);
+                        totalDist += dFinal; mPoints.push(points[0]);
                     }
                     break;
                 }
             }
-
-            ctx.beginPath();
-            ctx.strokeStyle = "#f72585";
-            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.strokeStyle = "#f72585"; ctx.lineWidth = 2.5;
             ctx.moveTo(mPoints[0].x, mPoints[0].y);
             for(let p of mPoints) ctx.lineTo(p.x, p.y);
             ctx.stroke();
-             
             for(let p of mPoints) {
                 ctx.beginPath(); ctx.fillStyle = "#f72585";
                 ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
             }
-
             return Math.round(totalDist * scale) + " " + unit;
         }
 
@@ -526,7 +417,6 @@
             const val = parseInt(iSlider.value);
             document.getElementById('islandRulerValHeader').textContent = val;
             document.getElementById('islandEpsilonDisplay').textContent = val + " px";
-
             const res = measurePoly(islandPoints, val, iCtx, iCanvas.width, iCanvas.height);
             document.getElementById('islandLengthDisplay').textContent = res;
         }
@@ -541,36 +431,32 @@
 
 
         /* =========================================
-           4. LA GRANDE BRETAGNE
+           4. LA GRANDE BRETAGNE (Haute Résolution)
            ========================================= */
         const gCanvas = document.getElementById('gbCanvas');
         const gCtx = gCanvas.getContext('2d');
         const gSlider = document.getElementById('gbRuler');
 
-        const gbShapeNormalized = [
-            {x:30,y:85},{x:40,y:87},{x:50,y:85},{x:60,y:82},{x:75,y:80},{x:85,y:78}, 
-            {x:88,y:75},{x:90,y:70},{x:88,y:65},{x:85,y:62}, 
-            {x:82,y:55},{x:80,y:50},{x:78,y:40},{x:75,y:30}, 
-            {x:70,y:20},{x:65,y:10},{x:55,y:5},{x:45,y:5},{x:40,y:10}, 
-            {x:35,y:20},{x:30,y:30},{x:35,y:35}, 
-            {x:30,y:40},{x:35,y:45},{x:40,y:48}, 
-            {x:35,y:50},{x:30,y:55},{x:25,y:60},{x:20,y:58},{x:15,y:62},{x:20,y:68}, 
-            {x:35,y:65},{x:40,y:70},{x:35,y:75},{x:30,y:80} 
+        // Nouvelles données haute résolution (simplifiées mais beaucoup plus précises)
+        // Coordonnées normalisées approximativement entre 0 et 100
+        const gbHighResNormalized = [
+            {x:49.2,y:96.5},{x:46.8,y:94.1},{x:43.5,y:93.8},{x:38.2,y:91.2},{x:32.5,y:90.1},{x:25.8,y:89.5},{x:20.1,y:87.5},{x:13.5,y:83.2},{x:11.2,y:78.5},{x:12.8,y:74.1},{x:18.5,y:72.5},{x:24.2,y:73.1},{x:31.5,y:75.8},{x:36.2,y:76.5},{x:39.5,y:74.2},{x:38.1,y:69.5},{x:35.2,y:65.1},{x:30.5,y:61.2},{x:24.1,y:58.5},{x:18.2,y:59.1},{x:12.5,y:62.5},{x:8.1,y:67.2},{x:4.5,y:64.5},{x:6.2,y:58.1},{x:10.5,y:54.2},{x:15.2,y:51.5},{x:21.5,y:49.8},{x:28.1,y:49.2},{x:32.5,y:47.5},{x:35.8,y:44.1},{x:34.2,y:38.5},{x:30.5,y:32.1},{x:28.2,y:26.5},{x:29.1,y:21.5},{x:32.5,y:16.2},{x:36.8,y:12.5},{x:42.1,y:8.5},{x:48.5,y:5.1},{x:54.2,y:3.5},{x:60.1,y:3.2},{x:65.8,y:4.5},{x:62.1,y:9.5},{x:58.5,y:14.2},{x:54.2,y:18.5},{x:56.8,y:23.1},{x:60.5,y:26.5},{x:64.2,y:29.8},{x:68.5,y:32.1},{x:73.2,y:35.5},{x:78.5,y:38.1},{x:82.1,y:42.5},{x:85.2,y:48.1},{x:88.5,y:54.2},{x:92.1,y:60.5},{x:93.5,y:66.2},{x:91.2,y:70.5},{x:86.5,y:72.1},{x:82.1,y:70.5},{x:76.5,y:67.2},{x:70.1,y:65.5},{x:64.2,y:66.1},{x:58.5,y:68.5},{x:54.2,y:72.1},{x:52.5,y:78.5},{x:54.2,y:84.1},{x:58.5,y:88.2},{x:64.1,y:89.5},{x:70.5,y:88.1},{x:76.2,y:85.5},{x:82.5,y:82.1},{x:88.1,y:78.5},{x:92.5,y:76.2},{x:95.8,y:78.5},{x:93.2,y:84.1},{x:89.5,y:88.5},{x:84.2,y:91.2},{x:78.5,y:93.5},{x:72.1,y:94.8},{x:65.8,y:95.5},{x:58.5,y:96.2},{x:52.1,y:97.1}
         ];
         let gbPoints = [];
 
         function generateGBPoints() {
             gbPoints = [];
             const w = gCanvas.width; const h = gCanvas.height;
-            const intendedWidth = w * 0.65;
-            const scaleFactor = intendedWidth / 75;
-            const offsetX = w/2 - (55 * scaleFactor);
-            const offsetY = h/2 - (45 * scaleFactor);
+            const intendedWidth = w * 0.7;
+            const scaleFactor = intendedWidth / 100;
+            const offsetX = w/2 - (50 * scaleFactor);
+            const offsetY = h/2 - (50 * scaleFactor);
 
-            for(let i=0; i<gbShapeNormalized.length; i++) {
-                const p1 = gbShapeNormalized[i];
-                const p2 = gbShapeNormalized[(i+1)%gbShapeNormalized.length];
-                const steps = 20; 
+            for(let i=0; i<gbHighResNormalized.length; i++) {
+                const p1 = gbHighResNormalized[i];
+                const p2 = gbHighResNormalized[(i+1)%gbHighResNormalized.length];
+                // Moins d'interpolation nécessaire car les données sont plus denses
+                const steps = 2; 
                 for(let j=0; j<steps; j++) {
                     const t = j/steps;
                     gbPoints.push({
@@ -584,11 +470,9 @@
         function runGBMeasurement() {
             if(gbPoints.length === 0) generateGBPoints();
             const rulerPx = parseInt(gSlider.value);
-            
             document.getElementById('gbRulerValHeader').textContent = rulerPx;
             document.getElementById('gbEpsilonDisplay').textContent = rulerPx + " km";
-            
-            const kmScaleFactor = 2000 / gCanvas.width; 
+            const kmScaleFactor = 2500 / gCanvas.width; 
             const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km", true);
             document.getElementById('gbLengthDisplay').textContent = res;
         }
