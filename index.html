@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Laboratoire Interactif V6</title>
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif Finale</title>
     <style>
         /* --- STYLE THEME SOMBRE (CSS) --- */
         :root {
@@ -140,21 +140,21 @@
     </div>
 
     <div class="section-container">
-        <h2>2. L'Infini Borné : La Construction de l'Étoile</h2>
-        <p>Cette simulation montre les premières étapes de la construction d'une fractale en forme d'étoile, similaire à celle de l'image fournie.</p>
+        <h2>2. L'Infini Borné : La Construction en Couches</h2>
+        <p>Voici la construction du flocon étape par étape. Chaque nouvelle itération ajoute une série de triangles sur les côtés existants. Les nouvelles formes sont affichées dans une couleur plus claire.</p>
         
-        <canvas id="customFractalCanvas" width="600" height="600"></canvas>
+        <canvas id="layeredCanvas" width="600" height="600"></canvas>
 
         <div class="controls">
             <div class="slider-header">
                 <label>Étape</label>
-                <span id="customIterVal">0</span>
+                <span id="layeredIterVal">0</span>
             </div>
-            <input type="range" id="customIterations" min="0" max="2" value="0" step="1">
+            <input type="range" id="layeredIterations" min="0" max="4" value="0" step="1">
 
             <div class="stats single">
                 <div class="stat-box">
-                    <div class="stat-value" id="customStats">Triangle Initial</div>
+                    <div class="stat-value" id="layeredStats">Triangle Initial</div>
                     <div class="stat-label">Description</div>
                 </div>
             </div>
@@ -220,14 +220,14 @@
 
     <script>
         /* =========================================
-           FONCTIONS UTILITAIRES (MATHS)
+           FONCTIONS UTILITAIRES
            ========================================= */
         function dist(p1, p2) {
             return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
         }
 
-        /* Fonction récursive de Koch avec rotation correcte vers l'EXTÉRIEUR */
-        function getKochPoints(p1, p2, iterations) {
+        /* Fonction qui calcule les points d'un flocon de Koch (Outline) */
+        function getKochPointsOutline(p1, p2, iterations) {
             if (iterations === 0) return [p1, p2];
 
             const vx = p2.x - p1.x;
@@ -236,31 +236,31 @@
             const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
             const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
             
-            const cosN60 = 0.5;
-            const sinN60 = -Math.sqrt(3)/2;
+            // Rotation +60 deg pour sortir (Si tracé CCW)
+            const cos60 = 0.5;
+            const sin60 = Math.sqrt(3)/2; 
             
+            // Vecteur pA -> pB
             const vABx = pB.x - pA.x;
             const vABy = pB.y - pA.y;
 
-            const rotX = vABx * cosN60 - vABy * sinN60;
-            const rotY = vABx * sinN60 + vABy * cosN60;
+            // Rotation
+            const rotX = vABx * cos60 - vABy * sin60;
+            const rotY = vABx * sin60 + vABy * cos60;
 
-            const pTip = {
-                x: pA.x + rotX,
-                y: pA.y + rotY
-            };
+            const pTip = { x: pA.x + rotX, y: pA.y + rotY };
 
-            const seg1 = getKochPoints(p1, pA, iterations - 1);
-            const seg2 = getKochPoints(pA, pTip, iterations - 1);
-            const seg3 = getKochPoints(pTip, pB, iterations - 1);
-            const seg4 = getKochPoints(pB, p2, iterations - 1);
+            const seg1 = getKochPointsOutline(p1, pA, iterations - 1);
+            const seg2 = getKochPointsOutline(pA, pTip, iterations - 1);
+            const seg3 = getKochPointsOutline(pTip, pB, iterations - 1);
+            const seg4 = getKochPointsOutline(pB, p2, iterations - 1);
 
             return [...seg1, ...seg2.slice(1), ...seg3.slice(1), ...seg4.slice(1)];
         }
 
 
         /* =========================================
-           1. LE SEGMENT DE KOCH (Simple Ligne)
+           1. LE SEGMENT DE KOCH (Ligne Simple)
            ========================================= */
         const sCanvas = document.getElementById('segmentCanvas');
         const sCtx = sCanvas.getContext('2d');
@@ -273,10 +273,38 @@
             
             const w = sCanvas.width;
             const h = sCanvas.height;
+            // On inverse les points start/end pour que la "gauche" (Left) soit vers le haut
+            // Sinon le +60deg pointe vers le bas.
+            // Start a gauche, End a droite.
             const start = {x: w * 0.1, y: h * 0.75}; 
             const end = {x: w * 0.9, y: h * 0.75};
             
-            const points = getKochPoints(start, end, iter);
+            // Pour un segment seul, on triche un peu sur la rotation ou on prend la fonction Outline
+            // Avec ma fonction Outline +60, sur un segment gauche->droite, ça monte (car Y inversé, +angle = CW visuel ? Non)
+            // Verifions visuellement :
+            // HTML Canvas Y est vers le bas.
+            // Vecteur (1,0). Rot +60 => (0.5, 0.866). Y positif = BAS.
+            // Donc sur le canvas, +60 fait pointer vers le BAS.
+            // Pour pointer vers le HAUT, il faut -60.
+            
+            // Je fais une version locale pour le segment seul qui pointe vers le haut
+            function getSegPointsUp(p1, p2, n) {
+                if (n === 0) return [p1, p2];
+                const vx = p2.x - p1.x, vy = p2.y - p1.y;
+                const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
+                const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
+                
+                // Rotation -60 deg (vers le haut)
+                const c = 0.5, s = -Math.sqrt(3)/2;
+                const vBaseX = pB.x - pA.x, vBaseY = pB.y - pA.y;
+                const tip = {
+                    x: pA.x + (vBaseX * c - vBaseY * s),
+                    y: pA.y + (vBaseX * s + vBaseY * c)
+                };
+                return [...getSegPointsUp(p1, pA, n-1), ...getSegPointsUp(pA, tip, n-1), ...getSegPointsUp(tip, pB, n-1), ...getSegPointsUp(pB, p2, n-1)];
+            }
+
+            const points = getSegPointsUp(start, end, iter);
 
             sCtx.beginPath();
             sCtx.strokeStyle = "#4cc9f0";
@@ -293,71 +321,120 @@
 
 
         /* =========================================
-           2. CONSTRUCTION DE L'ÉTOILE (Image fournie)
+           2. CONSTRUCTION EN COUCHES (VISUEL REMPLI)
            ========================================= */
-        const cCanvas = document.getElementById('customFractalCanvas');
-        const cCtx = cCanvas.getContext('2d');
-        const cSlider = document.getElementById('customIterations');
-        const cStats = document.getElementById('customStats');
+        const lCanvas = document.getElementById('layeredCanvas');
+        const lCtx = lCanvas.getContext('2d');
+        const lSlider = document.getElementById('layeredIterations');
+        const lStats = document.getElementById('layeredStats');
 
-        function drawTriangle(ctx, x, y, size, rotation, color) {
-            ctx.beginPath();
-            ctx.moveTo(x + size * Math.cos(rotation), y + size * Math.sin(rotation));
-            ctx.lineTo(x + size * Math.cos(rotation + 2 * Math.PI / 3), y + size * Math.sin(rotation + 2 * Math.PI / 3));
-            ctx.lineTo(x + size * Math.cos(rotation + 4 * Math.PI / 3), y + size * Math.sin(rotation + 4 * Math.PI / 3));
-            ctx.closePath();
-            ctx.fillStyle = color;
-            ctx.fill();
-        }
+        function drawLayered() {
+            const maxIter = parseInt(lSlider.value);
+            document.getElementById('layeredIterVal').textContent = maxIter;
+            lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
 
-        function drawCustomFractal() {
-            const iter = parseInt(cSlider.value);
-            document.getElementById('customIterVal').textContent = iter;
-            cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
-
-            const w = cCanvas.width;
-            const h = cCanvas.height;
+            const w = lCanvas.width;
+            const h = lCanvas.height;
+            const size = Math.min(w, h) * 0.55; 
+            const heightTri = size * Math.sqrt(3)/2;
             const cx = w / 2;
-            const cy = h / 2;
-            const size1 = Math.min(w, h) * 0.4;
-            const size2 = size1 * 1.2; // Second triangle is slightly larger
-            const size3 = size1 / 3; // Smaller triangles
+            const cy = h / 2 + heightTri / 6; 
 
-            let description = "";
+            // Triangle initial (Pointe en BAS pour que les ajouts aillent vers le HAUT/EXTERIEUR)
+            // Définition en sens anti-horaire (CCW) : p1(HautD) -> p2(HautG) -> p3(Bas) ?
+            // On veut le triangle gris de base "pointe en haut".
+            // Donc p1(BasG), p2(BasD), p3(Haut).
+            
+            const p1 = {x: cx - size/2, y: cy + heightTri/3}; // Bas Gauche
+            const p2 = {x: cx + size/2, y: cy + heightTri/3}; // Bas Droite
+            const p3 = {x: cx, y: cy - 2*heightTri/3};       // Haut Pointe
 
-            if (iter >= 0) {
-                // Étape 0: Premier triangle gris clair, pointe en haut
-                drawTriangle(cCtx, cx, cy + size1 / 6, size1, -Math.PI / 2, '#999999');
-                description = "Triangle Initial";
-            }
+            // Liste initiale des segments
+            // Si on parcourt p1->p2->p3->p1 (CCW), l'intérieur est à gauche.
+            // L'extérieur est à Droite.
+            // Dans le Canvas (Y vers bas), Rotation Droite = +Angle.
+            // Vérif: p1->p2 est horizontal droit (1,0). Rot +60 => (0.5, 0.866) => Bas.
+            // Oups. Si le triangle est pointe en haut, le segment p1->p2 est en bas.
+            // L'extérieur est en BAS. Donc +60 est correct.
+            
+            let segments = [
+                {a: p1, b: p2},
+                {a: p2, b: p3},
+                {a: p3, b: p1}
+            ];
 
-            if (iter >= 1) {
-                // Étape 1: Deuxième triangle gris foncé, pointe en bas
-                drawTriangle(cCtx, cx, cy - size2 / 6, size2, Math.PI / 2, '#555555');
-                description = "Étoile à Six Branches";
-            }
+            // 1. Dessiner la base (Iter 0)
+            lCtx.fillStyle = "#2c3e50"; // Couleur sombre de base (Gris/Bleu foncé)
+            lCtx.beginPath();
+            lCtx.moveTo(p1.x, p1.y);
+            lCtx.lineTo(p2.x, p2.y);
+            lCtx.lineTo(p3.x, p3.y);
+            lCtx.closePath();
+            lCtx.fill();
+            lCtx.strokeStyle = "#4cc9f0";
+            lCtx.lineWidth = 1;
+            lCtx.stroke();
 
-            if (iter >= 2) {
-                // Étape 2: Petits triangles gris foncé sur les pointes
-                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
-                const distances = [size1, size2, size1, size2, size1, size2];
+            // Boucle pour chaque itération demandée
+            // On dessine les triangles "par dessus"
+            for (let i = 0; i < maxIter; i++) {
+                let nextSegments = [];
                 
-                for (let i = 0; i < 6; i++) {
-                    const angle = angles[i];
-                    // Adjust distance and center for the small triangles to sit on the tips
-                    const dist = distances[i];
-                    // The small triangles are centered on the vertices of the previous star
-                    const tx = cx + dist * Math.cos(angle);
-                    const ty = (cy + (i % 2 === 0 ? size1 / 6 : -size2 / 6)) + dist * Math.sin(angle);
-                    // Rotation is opposite to the vertex they are on
-                    drawTriangle(cCtx, tx, ty, size3, angle + Math.PI, '#555555');
+                // Couleur différente pour chaque couche
+                // On éclaircit la couleur à chaque étape pour l'effet "Neige"
+                // Etape 0: Base foncée. Etape 1: plus clair...
+                const lightness = 40 + (i * 15);
+                lCtx.fillStyle = `hsl(200, 70%, ${lightness}%)`; 
+                
+                lCtx.beginPath(); // On commence un path pour tous les triangles de cette étape
+                
+                for (let seg of segments) {
+                    const u = seg.a;
+                    const v = seg.b;
+                    
+                    const vx = v.x - u.x;
+                    const vy = v.y - u.y;
+
+                    const pA = {x: u.x + vx/3, y: u.y + vy/3};
+                    const pB = {x: u.x + 2*vx/3, y: u.y + 2*vy/3};
+
+                    // Calcul de la pointe du triangle équilatéral sortant
+                    // Rotation +60 deg (car parcours CCW et Canvas Y inversé)
+                    const c = 0.5;
+                    const s = Math.sqrt(3)/2; // +sin60
+                    
+                    const tipX = pA.x + (pB.x - pA.x)*c - (pB.y - pA.y)*s;
+                    const tipY = pA.y + (pB.x - pA.x)*s + (pB.y - pA.y)*c;
+                    const pTip = {x: tipX, y: tipY};
+
+                    // Ajouter ce triangle au chemin de dessin
+                    lCtx.moveTo(pA.x, pA.y);
+                    lCtx.lineTo(pB.x, pB.y);
+                    lCtx.lineTo(pTip.x, pTip.y);
+                    lCtx.lineTo(pA.x, pA.y); // Fermer
+
+                    // Préparer les segments pour la prochaine itération
+                    // Le segment u->v devient 4 segments : u->pA, pA->pTip, pTip->pB, pB->v
+                    nextSegments.push({a: u, b: pA});
+                    nextSegments.push({a: pA, b: pTip});
+                    nextSegments.push({a: pTip, b: pB});
+                    nextSegments.push({a: pB, b: v});
                 }
-                description = "Fractale en Étoile";
+                
+                lCtx.fill();
+                lCtx.stroke(); // Garder un contour pour la netteté
+                
+                segments = nextSegments;
             }
-            cStats.textContent = description;
+
+            let desc = "";
+            if(maxIter === 0) desc = "Triangle Initial";
+            else if(maxIter === 1) desc = "Étoile de David (6 branches)";
+            else desc = `Itération ${maxIter} : ${segments.length/4} pointes ajoutées`;
+            lStats.textContent = desc;
         }
-        cSlider.addEventListener('input', drawCustomFractal);
-        drawCustomFractal();
+        lSlider.addEventListener('input', drawLayered);
+        drawLayered();
 
 
         /* =========================================
@@ -377,7 +454,6 @@
             const baseRadius = Math.min(w, h) * 0.25;
             const noiseAmp = baseRadius * 0.6; 
             const numPoints = 1200; 
-            
             const seeds = [Math.random(), Math.random(), Math.random(), Math.random()];
             
             for (let i = 0; i < numPoints; i++) {
@@ -523,7 +599,7 @@
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-                drawSegment(); drawCustomFractal();
+                drawSegment(); drawLayered();
                 generateBetterIsland(); runIslandMeasurement();
                 generateGBPoints(); runGBMeasurement();
             }, 250);
