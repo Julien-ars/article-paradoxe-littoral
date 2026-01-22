@@ -3,253 +3,401 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Simulation Interactive</title>
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif</title>
     <style>
-        /* --- STYLE (CSS) --- */
+        /* --- STYLE THEME SOMBRE (CSS) --- */
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e24;
+            --text-color: #e0e0e0;
+            --accent-color: #4cc9f0; /* Bleu cyan pour les titres */
+            --measure-color: #f72585; /* Rose néon pour la mesure */
+            --coast-color: #4895ef; /* Bleu pour la côte */
+        }
+
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
             margin: 0;
+            line-height: 1.6;
         }
 
-        h1 { margin-bottom: 10px; color: #2c3e50; }
-        
-        .container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        h1, h2 { color: var(--accent-color); margin-top: 0; }
+        h1 { margin-bottom: 40px; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
+        h2 { border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
+        p { color: #bbb; }
+
+        /* Conteneur principal pour chaque section */
+        .section-container {
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             max-width: 800px;
             width: 100%;
-            text-align: center;
+            margin-bottom: 50px;
+            border: 1px solid #333;
         }
 
         canvas {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #eefbff; /* Couleur de l'eau */
+            border-radius: 8px;
+            background-color: #0a0a0f; /* Fond très sombre pour les canvas */
             cursor: crosshair;
-            max-width: 100%;
+            width: 100%;
+            height: auto;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            border: 1px solid #333;
         }
 
         .controls {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f1f3f5;
-            border-radius: 8px;
+            margin-top: 25px;
+            padding: 20px;
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 12px;
         }
 
         .slider-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 15px;
+            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
+            font-weight: bold; color: var(--accent-color);
         }
 
         input[type=range] {
-            width: 200px;
-            cursor: pointer;
+            width: 100%; cursor: pointer; accent-color: var(--accent-color);
         }
 
         .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;
         }
 
         .stat-box {
-            background: white;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #e9ecef;
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; text-align: center;
+            border: 1px solid #444;
         }
 
         .stat-value {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #2c3e50;
+            font-size: 1.5em; font-weight: bold; color: var(--text-color);
         }
+        .stat-value.highlight { color: var(--measure-color); }
 
         .stat-label {
-            font-size: 0.85em;
-            color: #6c757d;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 0.8em; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;
         }
-
-        .legend {
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .dot { height: 10px; width: 10px; display: inline-block; border-radius: 50%; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Le Paradoxe du Littoral</h1>
-        <p>Ajustez la taille de la règle pour voir comment la longueur mesurée change.</p>
+    <h1>Laboratoire du Paradoxe du Littoral</h1>
+
+    <div class="section-container">
+        <h2>1. L'Approche Théorique : Le Flocon de Koch</h2>
+        <p>Voici une fractale mathématique parfaite. Ici, ce n'est pas la règle qui change, mais la complexité de la forme elle-même. Observez comment la longueur explose alors que la forme reste confinée dans le même espace.</p>
         
-        <canvas id="coastCanvas" width="600" height="400"></canvas>
+        <canvas id="kochCanvas" width="600" height="400"></canvas>
 
         <div class="controls">
             <div class="slider-container">
-                <span>Précision (Taille de la règle) :</span>
-                <input type="range" id="rulerInput" min="10" max="150" value="80" step="1">
+                <label for="kochIterations">Nombre d'itérations (n) : <span id="kochIterVal">0</span></label>
+                <input type="range" id="kochIterations" min="0" max="6" value="0" step="1">
             </div>
 
             <div class="stats">
                 <div class="stat-box">
-                    <div class="stat-value" id="rulerSizeDisplay">80 px</div>
-                    <div class="stat-label">Longueur de la Règle (&epsilon;)</div>
+                    <div class="stat-value" id="kochSegmentsDisplay">3</div>
+                    <div class="stat-label">Nombre de segments</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value" id="totalLengthDisplay" style="color: #e74c3c;">0 px</div>
-                    <div class="stat-label">Longueur Totale Mesurée</div>
+                    <div class="stat-value highlight" id="kochLengthDisplay">100.00 Unités</div>
+                    <div class="stat-label">Longueur Totale Théorique</div>
                 </div>
-            </div>
-
-            <div class="legend">
-                <span class="dot" style="background: #333;"></span>Côte réelle
-                &nbsp;&nbsp;|&nbsp;&nbsp;
-                <span class="dot" style="background: #e74c3c;"></span>Mesure approximative
             </div>
         </div>
     </div>
 
+
+    <div class="section-container">
+        <h2>2. La Simulation : L'Île Déchiquetée</h2>
+        <p>Cette île est générée aléatoirement pour être très accidentée. Utilisez le curseur pour changer la taille de votre "règle" (le pas de mesure &epsilon;). Plus la règle est petite, plus elle entre dans les détails.</p>
+        
+        <canvas id="islandCanvas" width="600" height="400"></canvas>
+
+        <div class="controls">
+            <div class="slider-container">
+                <label for="islandRuler">Taille de la règle (&epsilon;) : <span id="islandRulerVal">80</span> px</label>
+                <input type="range" id="islandRuler" min="5" max="150" value="80" step="1">
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value highlight" id="islandLengthDisplay">0 px</div>
+                    <div class="stat-label">Longueur Mesurée</div>
+                </div>
+                 <div class="stat-box" style="display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9em;">
+                    <div><span style="color:var(--coast-color)">●</span> Côte réelle</div>
+                    <div><span style="color:var(--measure-color)">●</span> Mesure</div>
+                </div>
+            </div>
+             <button onclick="generateBetterIsland(); runIslandMeasurement();" style="margin-top:15px; padding: 8px 15px; background:transparent; border:1px solid var(--accent-color); color:var(--accent-color); border-radius:4px; cursor:pointer;">Générer une nouvelle île</button>
+        </div>
+    </div>
+
+
+     <div class="section-container">
+        <h2>3. Le Cas Réel : La Grande-Bretagne</h2>
+        <p>Application de la même méthode de mesure sur un tracé simplifié des côtes de la Grande-Bretagne. Le paradoxe s'applique aussi à la réalité !</p>
+        
+        <canvas id="gbCanvas" width="600" height="600"></canvas>
+
+        <div class="controls">
+            <div class="slider-container">
+                 <label for="gbRuler">Taille de la règle (&epsilon;) : <span id="gbRulerVal">100</span> km (approx)</label>
+                <input type="range" id="gbRuler" min="15" max="180" value="100" step="1">
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value highlight" id="gbLengthDisplay">0 km</div>
+                    <div class="stat-label">Longueur Mesurée (Approx.)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        /* --- LOGIQUE (JAVASCRIPT) --- */
-        
-        const canvas = document.getElementById('coastCanvas');
-        const ctx = canvas.getContext('2d');
-        const rulerInput = document.getElementById('rulerInput');
-        const rulerDisplay = document.getElementById('rulerSizeDisplay');
-        const lengthDisplay = document.getElementById('totalLengthDisplay');
-
-        // Configuration de l'île
-        let islandPoints = [];
-        const numPoints = 1000; // Résolution de la "vraie" côte
-        
-        // 1. Génération de l'île (Bruit sur un cercle)
-        function generateIsland() {
-            islandPoints = [];
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const baseRadius = 120;
-            
-            // On utilise une superposition de sinus pour créer un effet "fractal" simple
-            for (let i = 0; i < numPoints; i++) {
-                const angle = (Math.PI * 2 * i) / numPoints;
-                
-                // Variation aléatoire "lisse" (somme de sinus)
-                let noise = Math.sin(angle * 5 + Math.random()) * 20 +
-                            Math.sin(angle * 12 + Math.random()) * 10 +
-                            Math.sin(angle * 30 + Math.random()) * 5;
-
-                const r = baseRadius + noise;
-                const x = centerX + r * Math.cos(angle);
-                const y = centerY + r * Math.sin(angle);
-                islandPoints.push({x, y});
-            }
-            // On ferme la boucle parfaitement
-            islandPoints.push(islandPoints[0]);
-        }
-
-        // 2. Fonction de distance entre deux points
+        /* =========================================
+           UTILITAIRES PARTAGÉS
+           ========================================= */
         function dist(p1, p2) {
             return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
         }
 
-        // 3. Algorithme de mesure (Le compas)
-        function measureCoastline(rulerLength) {
-            if (islandPoints.length === 0) return;
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // A. DESSINER LA CÔTE "RÉELLE" (Haute résolution)
+        // Fonction générique de mesure (méthode du compas)
+        function genericMeasure(points, rulerLen, ctx, width, height, scaleFactorForDisplay = 1, unit = "px") {
+             if (points.length === 0) return 0;
+            
+            // A. Dessiner la côte "réelle" en arrière-plan
+            ctx.clearRect(0, 0, width, height);
             ctx.beginPath();
-            ctx.strokeStyle = "#333";
-            ctx.lineWidth = 2;
-            ctx.moveTo(islandPoints[0].x, islandPoints[0].y);
-            for (let p of islandPoints) {
-                ctx.lineTo(p.x, p.y);
-            }
+            // Utilisation de la couleur CSS var(--coast-color)
+            ctx.strokeStyle = "#4895ef"; 
+            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = 0.7;
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let p of points) ctx.lineTo(p.x, p.y);
+            ctx.closePath();
             ctx.stroke();
+            ctx.globalAlpha = 1.0;
 
-            // B. SIMULATION DU COMPAS
-            let measurementPoints = [];
-            let currentIndex = 0;
-            let currentPoint = islandPoints[0];
-            measurementPoints.push(currentPoint);
+            // B. Algorithme de mesure
+            let mPoints = [points[0]];
+            let currentIdx = 0;
+            let totalLen = 0;
 
-            let totalMeasuredLength = 0;
-
-            // On parcourt la côte
             while (true) {
-                let foundNext = false;
-                
-                // On cherche le prochain point sur la côte qui est à distance >= rulerLength
-                // Note: C'est une approximation gloutonne pour la démo visuelle
-                for (let i = currentIndex + 1; i < islandPoints.length; i++) {
-                    const d = dist(currentPoint, islandPoints[i]);
-                    
-                    if (d >= rulerLength) {
-                        // On a trouvé où le compas retombe
-                        currentIndex = i;
-                        currentPoint = islandPoints[i];
-                        measurementPoints.push(currentPoint);
-                        totalMeasuredLength += d; // On ajoute la distance réelle du segment
-                        foundNext = true;
+                let found = false;
+                // Recherche avant
+                for (let i = currentIdx + 1; i < points.length; i++) {
+                    if (dist(points[currentIdx], points[i]) >= rulerLen) {
+                        totalLen += dist(points[currentIdx], points[i]);
+                        currentIdx = i;
+                        mPoints.push(points[currentIdx]);
+                        found = true;
                         break;
                     }
                 }
-
-                // Si on ne trouve plus de point assez loin ou qu'on a fini le tour
-                if (!foundNext || currentIndex >= islandPoints.length - 1) {
-                    // Relier au début pour fermer la boucle de mesure
-                    const finalDist = dist(currentPoint, measurementPoints[0]);
-                    totalMeasuredLength += finalDist;
-                    measurementPoints.push(measurementPoints[0]); 
+                // Si on ne trouve pas, on essaie de fermer la boucle avec le point de départ
+                if (!found) {
+                     let finalD = dist(points[currentIdx], points[0]);
+                     // On ne ferme que si ça a du sens (évite de fermer si on est trop loin)
+                     if(finalD >= rulerLen * 0.5 || mPoints.length > 2) {
+                         totalLen += finalD;
+                         mPoints.push(points[0]);
+                     }
                     break;
                 }
             }
 
-            // C. DESSINER LA MESURE (Rouge)
+            // C. Dessiner la mesure
             ctx.beginPath();
-            ctx.strokeStyle = "#e74c3c";
-            ctx.lineWidth = 3;
-            ctx.moveTo(measurementPoints[0].x, measurementPoints[0].y);
-            
-            for (let p of measurementPoints) {
+            // Utilisation de la couleur CSS var(--measure-color)
+            ctx.strokeStyle = "#f72585";
+            ctx.lineWidth = 2.5;
+            ctx.moveTo(mPoints[0].x, mPoints[0].y);
+            for (let p of mPoints) {
                 ctx.lineTo(p.x, p.y);
-                // Dessiner les points de pivot
-                ctx.fillStyle = "#e74c3c";
-                ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+                ctx.fillStyle = "#f72585";
+                ctx.fillRect(p.x - 2.5, p.y - 2.5, 5, 5);
             }
             ctx.stroke();
 
-            // Mise à jour de l'affichage
-            rulerDisplay.textContent = rulerLength + " px";
-            lengthDisplay.textContent = Math.round(totalMeasuredLength) + " px";
+            return Math.round(totalLen * scaleFactorForDisplay) + " " + unit;
         }
 
-        // Initialisation
-        generateIsland();
-        measureCoastline(parseInt(rulerInput.value));
 
-        // Interaction
-        rulerInput.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
-            measureCoastline(val);
+        /* =========================================
+           PARTIE 1 : FLOCON DE KOCH
+           ========================================= */
+        const kCanvas = document.getElementById('kochCanvas');
+        const kCtx = kCanvas.getContext('2d');
+        const kSlider = document.getElementById('kochIterations');
+        const kIterDisplay = document.getElementById('kochIterVal');
+        
+        // Triangle initial
+        const p1 = {x: 100, y: 300};
+        const p2 = {x: 500, y: 300};
+        const p3 = {x: 300, y: 300 - 400 * Math.sqrt(3)/2}; // Hauteur du triangle équilatéral
+        let kochSegments = [[p1, p2], [p2, p3], [p3, p1]];
+        const initialPerimeter = dist(p1, p2) * 3;
+
+        function drawKoch() {
+            const iterations = parseInt(kSlider.value);
+            kIterDisplay.textContent = iterations;
+            
+            kCtx.clearRect(0,0, kCanvas.width, kCanvas.height);
+            kCtx.strokeStyle = "#4cc9f0"; // Couleur accent
+            kCtx.lineWidth = 2;
+            kCtx.beginPath();
+
+            // Fonction récursive de dessin
+            function recursiveKoch(a, b, iter) {
+                if (iter === 0) {
+                    kCtx.moveTo(a.x, a.y);
+                    kCtx.lineTo(b.x, b.y);
+                } else {
+                    // Calcul des tiers
+                    const vX = b.x - a.x;
+                    const vY = b.y - a.y;
+                    const pA = {x: a.x + vX/3, y: a.y + vY/3};
+                    const pB = {x: a.x + 2*vX/3, y: a.y + 2*vY/3};
+                    
+                    // Calcul de la pointe (rotation de 60 degrés)
+                    const cos60 = 0.5, sin60 = Math.sqrt(3)/2;
+                    const pTip = {
+                        x: pA.x + (pB.x - pA.x) * cos60 - (pB.y - pA.y) * sin60,
+                        y: pA.y + (pB.x - pA.x) * sin60 + (pB.y - pA.y) * cos60
+                    };
+
+                    recursiveKoch(a, pA, iter - 1);
+                    recursiveKoch(pA, pTip, iter - 1);
+                    recursiveKoch(pTip, pB, iter - 1);
+                    recursiveKoch(pB, b, iter - 1);
+                }
+            }
+
+            // Lancer la récursion sur les 3 côtés initiaux
+            for(let segment of kochSegments) {
+                recursiveKoch(segment[0], segment[1], iterations);
+            }
+            kCtx.stroke();
+
+            // Mise à jour des stats théoriques
+            const numSeg = 3 * Math.pow(4, iterations);
+            // Formule : L_n = L_0 * (4/3)^n. On normalise L_0 à 100 pour l'affichage.
+            const theoreticalLen = 100 * Math.pow(4/3, iterations);
+            
+            document.getElementById('kochSegmentsDisplay').textContent = new Intl.NumberFormat().format(numSeg);
+            document.getElementById('kochLengthDisplay').textContent = theoreticalLen.toFixed(2) + " Unités";
+        }
+        kSlider.addEventListener('input', drawKoch);
+        drawKoch();
+
+
+        /* =========================================
+           PARTIE 2 : ÎLE DÉCHIQUETÉE (Améliorée)
+           ========================================= */
+        const iCanvas = document.getElementById('islandCanvas');
+        const iCtx = iCanvas.getContext('2d');
+        const iSlider = document.getElementById('islandRuler');
+        let islandPoints = [];
+
+        function generateBetterIsland() {
+            islandPoints = [];
+            const centerX = iCanvas.width / 2;
+            const centerY = iCanvas.height / 2;
+            const baseRadius = 130;
+            const numPoints = 1500; // Haute résolution
+            
+            // On utilise plus de fréquences et des amplitudes plus fortes pour un look plus "sauvage"
+            const seeds = [Math.random(), Math.random(), Math.random(), Math.random(), Math.random()];
+            
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (Math.PI * 2 * i) / numPoints;
+                // Somme de sinus plus agressive
+                let noise = Math.sin(angle * 3 + seeds[0]) * 35 +
+                            Math.sin(angle * 7 + seeds[1]) * 20 +
+                            Math.sin(angle * 17 + seeds[2]) * 10 +
+                            Math.sin(angle * 31 + seeds[3]) * 5 +
+                            Math.sin(angle * 63 + seeds[4]) * 2; // Haute fréquence pour le "grain"
+
+                const r = baseRadius + noise;
+                islandPoints.push({x: centerX + r * Math.cos(angle), y: centerY + r * Math.sin(angle)});
+            }
+        }
+
+        function runIslandMeasurement() {
+            const val = parseInt(iSlider.value);
+            document.getElementById('islandRulerVal').textContent = val;
+            const resultStr = genericMeasure(islandPoints, val, iCtx, iCanvas.width, iCanvas.height);
+            document.getElementById('islandLengthDisplay').textContent = resultStr;
+        }
+
+        iSlider.addEventListener('input', runIslandMeasurement);
+        generateBetterIsland();
+        runIslandMeasurement();
+
+
+        /* =========================================
+           PARTIE 3 : GRANDE-BRETAGNE (Données réelles simplifiées)
+           ========================================= */
+        const gCanvas = document.getElementById('gbCanvas');
+        const gCtx = gCanvas.getContext('2d');
+        const gSlider = document.getElementById('gbRuler');
+        
+        // Coordonnées simplifiées et normalisées de la GB pour tenir dans le canvas 600x600
+        // Note: Ceci est une approximation très simplifiée pour la démonstration.
+        const gbRawData = [
+            [309,569],[333,561],[363,556],[384,537],[399,509],[419,492],[449,484],[482,482],[507,470],[524,446],[531,423],[541,402],[560,388],[571,364],[565,338],[550,321],[532,315],[516,306],[514,281],[526,259],[533,234],[534,205],[515,187],[492,175],[467,164],[451,141],[433,122],[410,103],[384,88],[357,76],[328,66],[299,58],[271,54],[245,59],[223,75],[208,96],[199,121],[195,148],[186,173],[170,191],[148,202],[125,212],[108,228],[99,251],[98,278],[105,304],[120,326],[141,341],[164,353],[186,369],[197,392],[196,418],[186,441],[169,459],[146,470],[123,477],[101,489],[87,509],[82,535],[89,559],[106,578],[131,585],[158,581],[184,570],[209,558],[235,549],[262,545],[287,552],[309,569]
+             // Ajout de points intermédiaires pour lisser un peu et améliorer la simulation
+            ,[321,565],[348,558],[373,546],[391,523],[409,500],[434,488],[465,483],[494,476],[515,458],[527,434],[536,412],[550,395],[565,376],[568,351],[557,329],[541,318],[524,310],[515,293],[520,270],[529,246],[533,219],[524,196],[503,181],[479,169],[459,152],[442,131],[421,112],[397,95],[370,82],[342,71],[313,62],[285,56],[258,56],[234,67],[215,85],[203,108],[197,134],[190,160],[178,182],[159,196],[136,207],[116,220],[103,239],[98,264],[101,291],[112,315],[130,333],[152,347],[175,361],[191,380],[196,405],[191,429],[177,450],[157,464],[134,473],[112,483],[94,499],[84,522],[85,547],[97,568],[118,581],[144,583],[171,575],[196,564],[222,553],[248,547],[274,548]
+        ];
+        // Trier pour que le tracé soit dans l'ordre (nécessaire car l'ajout manuel ci-dessus a cassé l'ordre)
+        gbRawData.sort((a,b) => a[0] - b[0]); 
+
+        let gbPoints = [];
+        // Re-ordonner approximativement pour former une boucle pour la démo (très simplifié)
+        const centerGB = {x:300, y:300};
+        gbRawData.sort((a,b) => {
+            const angA = Math.atan2(a[1]-centerGB.y, a[0]-centerGB.x);
+            const angB = Math.atan2(b[1]-centerGB.y, b[0]-centerGB.x);
+            return angA - angB;
         });
+        
+        // Conversion des données brutes en objets points
+        for(let p of gbRawData) {
+            // Légère homothétie pour centrer
+            gbPoints.push({x: p[0]*0.9 + 30, y: p[1]*0.9 + 10}); 
+        }
+
+        function runGBMeasurement() {
+            // La règle est en pixels, mais pour l'affichage on fait semblant que ce sont des km
+            const rulerPx = parseInt(gSlider.value);
+            document.getElementById('gbRulerVal').textContent = rulerPx;
+            
+            // Facteur d'échelle arbitraire : 1 pixel = ~3 km pour cette démo
+            const kmScaleFactor = 3.5; 
+            
+            const resultStr = genericMeasure(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km");
+            document.getElementById('gbLengthDisplay').textContent = resultStr;
+        }
+
+        gSlider.addEventListener('input', runGBMeasurement);
+        // Premier appel après un court délai pour assurer le chargement
+        setTimeout(runGBMeasurement, 100);
 
     </script>
 </body>
