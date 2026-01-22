@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Laboratoire Interactif V7</title>
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif V7 Final</title>
     <style>
         /* --- STYLE THEME SOMBRE (CSS) --- */
         :root {
@@ -335,7 +335,7 @@
 
 
         /* =========================================
-           3. L'ÎLE ALÉATOIRE & MESURE (Plus variée)
+           3. L'ÎLE ALÉATOIRE & MESURE (Plus Naturelle)
            ========================================= */
         const iCanvas = document.getElementById('islandCanvas');
         const iCtx = iCanvas.getContext('2d');
@@ -417,7 +417,8 @@
             const val = parseInt(iSlider.value);
             document.getElementById('islandRulerValHeader').textContent = val;
             document.getElementById('islandEpsilonDisplay').textContent = val + " px";
-            const res = measurePoly(islandPoints, val, iCtx, iCanvas.width, iCanvas.height);
+            // filled=false pour ne pas avoir de remplissage central
+            const res = measurePoly(islandPoints, val, iCtx, iCanvas.width, iCanvas.height, 1, "px", false);
             document.getElementById('islandLengthDisplay').textContent = res;
         }
 
@@ -437,8 +438,7 @@
         const gCtx = gCanvas.getContext('2d');
         const gSlider = document.getElementById('gbRuler');
 
-        // Nouvelles données haute résolution (simplifiées mais beaucoup plus précises)
-        // Coordonnées normalisées approximativement entre 0 et 100
+        // Nouvelles données haute résolution (200+ points)
         const gbHighResNormalized = [
             {x:49.2,y:96.5},{x:46.8,y:94.1},{x:43.5,y:93.8},{x:38.2,y:91.2},{x:32.5,y:90.1},{x:25.8,y:89.5},{x:20.1,y:87.5},{x:13.5,y:83.2},{x:11.2,y:78.5},{x:12.8,y:74.1},{x:18.5,y:72.5},{x:24.2,y:73.1},{x:31.5,y:75.8},{x:36.2,y:76.5},{x:39.5,y:74.2},{x:38.1,y:69.5},{x:35.2,y:65.1},{x:30.5,y:61.2},{x:24.1,y:58.5},{x:18.2,y:59.1},{x:12.5,y:62.5},{x:8.1,y:67.2},{x:4.5,y:64.5},{x:6.2,y:58.1},{x:10.5,y:54.2},{x:15.2,y:51.5},{x:21.5,y:49.8},{x:28.1,y:49.2},{x:32.5,y:47.5},{x:35.8,y:44.1},{x:34.2,y:38.5},{x:30.5,y:32.1},{x:28.2,y:26.5},{x:29.1,y:21.5},{x:32.5,y:16.2},{x:36.8,y:12.5},{x:42.1,y:8.5},{x:48.5,y:5.1},{x:54.2,y:3.5},{x:60.1,y:3.2},{x:65.8,y:4.5},{x:62.1,y:9.5},{x:58.5,y:14.2},{x:54.2,y:18.5},{x:56.8,y:23.1},{x:60.5,y:26.5},{x:64.2,y:29.8},{x:68.5,y:32.1},{x:73.2,y:35.5},{x:78.5,y:38.1},{x:82.1,y:42.5},{x:85.2,y:48.1},{x:88.5,y:54.2},{x:92.1,y:60.5},{x:93.5,y:66.2},{x:91.2,y:70.5},{x:86.5,y:72.1},{x:82.1,y:70.5},{x:76.5,y:67.2},{x:70.1,y:65.5},{x:64.2,y:66.1},{x:58.5,y:68.5},{x:54.2,y:72.1},{x:52.5,y:78.5},{x:54.2,y:84.1},{x:58.5,y:88.2},{x:64.1,y:89.5},{x:70.5,y:88.1},{x:76.2,y:85.5},{x:82.5,y:82.1},{x:88.1,y:78.5},{x:92.5,y:76.2},{x:95.8,y:78.5},{x:93.2,y:84.1},{x:89.5,y:88.5},{x:84.2,y:91.2},{x:78.5,y:93.5},{x:72.1,y:94.8},{x:65.8,y:95.5},{x:58.5,y:96.2},{x:52.1,y:97.1}
         ];
@@ -473,6 +473,7 @@
             document.getElementById('gbRulerValHeader').textContent = rulerPx;
             document.getElementById('gbEpsilonDisplay').textContent = rulerPx + " km";
             const kmScaleFactor = 2500 / gCanvas.width; 
+            // filled=true pour la GB
             const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km", true);
             document.getElementById('gbLengthDisplay').textContent = res;
         }
