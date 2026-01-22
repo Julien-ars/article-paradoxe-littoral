@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Paradoxe du Littoral - Simulation Interactive</title>
+    <style>
+        /* --- STYLE (CSS) --- */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 { margin-bottom: 10px; color: #2c3e50; }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #eefbff; /* Couleur de l'eau */
+            cursor: crosshair;
+            max-width: 100%;
+        }
+
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f1f3f5;
+            border-radius: 8px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        input[type=range] {
+            width: 200px;
+            cursor: pointer;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .dot { height: 10px; width: 10px; display: inline-block; border-radius: 50%; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Le Paradoxe du Littoral</h1>
+        <p>Ajustez la taille de la règle pour voir comment la longueur mesurée change.</p>
+        
+        <canvas id="coastCanvas" width="600" height="400"></canvas>
+
+        <div class="controls">
+            <div class="slider-container">
+                <span>Précision (Taille de la règle) :</span>
+                <input type="range" id="rulerInput" min="10" max="150" value="80" step="1">
+            </div>
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="rulerSizeDisplay">80 px</div>
+                    <div class="stat-label">Longueur de la Règle (&epsilon;)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="totalLengthDisplay" style="color: #e74c3c;">0 px</div>
+                    <div class="stat-label">Longueur Totale Mesurée</div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <span class="dot" style="background: #333;"></span>Côte réelle
+                &nbsp;&nbsp;|&nbsp;&nbsp;
+                <span class="dot" style="background: #e74c3c;"></span>Mesure approximative
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- LOGIQUE (JAVASCRIPT) --- */
+        
+        const canvas = document.getElementById('coastCanvas');
+        const ctx = canvas.getContext('2d');
+        const rulerInput = document.getElementById('rulerInput');
+        const rulerDisplay = document.getElementById('rulerSizeDisplay');
+        const lengthDisplay = document.getElementById('totalLengthDisplay');
+
+        // Configuration de l'île
+        let islandPoints = [];
+        const numPoints = 1000; // Résolution de la "vraie" côte
+        
+        // 1. Génération de l'île (Bruit sur un cercle)
+        function generateIsland() {
+            islandPoints = [];
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const baseRadius = 120;
+            
+            // On utilise une superposition de sinus pour créer un effet "fractal" simple
+            for (let i = 0; i < numPoints; i++) {
+                const angle = (Math.PI * 2 * i) / numPoints;
+                
+                // Variation aléatoire "lisse" (somme de sinus)
+                let noise = Math.sin(angle * 5 + Math.random()) * 20 +
+                            Math.sin(angle * 12 + Math.random()) * 10 +
+                            Math.sin(angle * 30 + Math.random()) * 5;
+
+                const r = baseRadius + noise;
+                const x = centerX + r * Math.cos(angle);
+                const y = centerY + r * Math.sin(angle);
+                islandPoints.push({x, y});
+            }
+            // On ferme la boucle parfaitement
+            islandPoints.push(islandPoints[0]);
+        }
+
+        // 2. Fonction de distance entre deux points
+        function dist(p1, p2) {
+            return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
+        }
+
+        // 3. Algorithme de mesure (Le compas)
+        function measureCoastline(rulerLength) {
+            if (islandPoints.length === 0) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // A. DESSINER LA CÔTE "RÉELLE" (Haute résolution)
+            ctx.beginPath();
+            ctx.strokeStyle = "#333";
+            ctx.lineWidth = 2;
+            ctx.moveTo(islandPoints[0].x, islandPoints[0].y);
+            for (let p of islandPoints) {
+                ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+
+            // B. SIMULATION DU COMPAS
+            let measurementPoints = [];
+            let currentIndex = 0;
+            let currentPoint = islandPoints[0];
+            measurementPoints.push(currentPoint);
+
+            let totalMeasuredLength = 0;
+
+            // On parcourt la côte
+            while (true) {
+                let foundNext = false;
+                
+                // On cherche le prochain point sur la côte qui est à distance >= rulerLength
+                // Note: C'est une approximation gloutonne pour la démo visuelle
+                for (let i = currentIndex + 1; i < islandPoints.length; i++) {
+                    const d = dist(currentPoint, islandPoints[i]);
+                    
+                    if (d >= rulerLength) {
+                        // On a trouvé où le compas retombe
+                        currentIndex = i;
+                        currentPoint = islandPoints[i];
+                        measurementPoints.push(currentPoint);
+                        totalMeasuredLength += d; // On ajoute la distance réelle du segment
+                        foundNext = true;
+                        break;
+                    }
+                }
+
+                // Si on ne trouve plus de point assez loin ou qu'on a fini le tour
+                if (!foundNext || currentIndex >= islandPoints.length - 1) {
+                    // Relier au début pour fermer la boucle de mesure
+                    const finalDist = dist(currentPoint, measurementPoints[0]);
+                    totalMeasuredLength += finalDist;
+                    measurementPoints.push(measurementPoints[0]); 
+                    break;
+                }
+            }
+
+            // C. DESSINER LA MESURE (Rouge)
+            ctx.beginPath();
+            ctx.strokeStyle = "#e74c3c";
+            ctx.lineWidth = 3;
+            ctx.moveTo(measurementPoints[0].x, measurementPoints[0].y);
+            
+            for (let p of measurementPoints) {
+                ctx.lineTo(p.x, p.y);
+                // Dessiner les points de pivot
+                ctx.fillStyle = "#e74c3c";
+                ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+            }
+            ctx.stroke();
+
+            // Mise à jour de l'affichage
+            rulerDisplay.textContent = rulerLength + " px";
+            lengthDisplay.textContent = Math.round(totalMeasuredLength) + " px";
+        }
+
+        // Initialisation
+        generateIsland();
+        measureCoastline(parseInt(rulerInput.value));
+
+        // Interaction
+        rulerInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            measureCoastline(val);
+        });
+
+    </script>
+</body>
+</html>
