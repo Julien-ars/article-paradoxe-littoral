@@ -10,8 +10,8 @@
             --bg-color: #121212;
             --container-bg: #1e1e24;
             --text-color: #e0e0e0;
-            --accent-color: #4cc9f0; /* Bleu cyan pour les titres */
-            --measure-color: #f72585; /* Rose néon pour la mesure */
+            --accent-color: #4cc9f0; /* Bleu cyan */
+            --measure-color: #f72585; /* Rose néon */
             --coast-color: #4895ef; /* Bleu pour la côte */
         }
 
@@ -27,12 +27,10 @@
             line-height: 1.6;
         }
 
-        h1, h2 { color: var(--accent-color); margin-top: 0; }
-        h1 { margin-bottom: 40px; text-align: center; text-transform: uppercase; letter-spacing: 2px; }
-        h2 { border-bottom: 2px solid var(--accent-color); padding-bottom: 10px; margin-bottom: 20px; }
-        p { color: #bbb; }
+        h1 { margin: 40px 0; text-align: center; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-color); }
+        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; color: #fff; }
+        p { color: #aaa; margin-bottom: 20px; }
 
-        /* Conteneur principal pour chaque section */
         .section-container {
             background: var(--container-bg);
             padding: 30px;
@@ -46,47 +44,46 @@
 
         canvas {
             border-radius: 8px;
-            background-color: #0a0a0f; /* Fond très sombre pour les canvas */
-            cursor: crosshair;
+            background-color: #0a0a0f;
             width: 100%;
-            height: auto;
+            height: auto; /* Responsive */
             box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
             border: 1px solid #333;
+            margin-bottom: 15px;
         }
 
         .controls {
-            margin-top: 25px;
+            background-color: rgba(255,255,255,0.03);
             padding: 20px;
-            background-color: rgba(255,255,255,0.05);
-            border-radius: 12px;
+            border-radius: 8px;
         }
 
-        .slider-container {
-            display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;
-            font-weight: bold; color: var(--accent-color);
+        .slider-header {
+            display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: var(--accent-color);
         }
 
         input[type=range] {
-            width: 100%; cursor: pointer; accent-color: var(--accent-color);
+            width: 100%; cursor: pointer; accent-color: var(--accent-color); margin-bottom: 15px;
         }
 
         .stats {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;
         }
 
         .stat-box {
-            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; text-align: center;
-            border: 1px solid #444;
+            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #444;
         }
 
-        .stat-value {
-            font-size: 1.5em; font-weight: bold; color: var(--text-color);
-        }
+        .stat-value { font-size: 1.4em; font-weight: bold; color: #fff; }
         .stat-value.highlight { color: var(--measure-color); }
+        .stat-label { font-size: 0.75em; color: #777; text-transform: uppercase; margin-top: 5px; }
 
-        .stat-label {
-            font-size: 0.8em; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px;
+        button {
+            background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color);
+            padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: 0.3s;
         }
+        button:hover { background: var(--accent-color); color: #000; }
+
     </style>
 </head>
 <body>
@@ -94,16 +91,43 @@
     <h1>Laboratoire du Paradoxe du Littoral</h1>
 
     <div class="section-container">
-        <h2>1. L'Approche Théorique : Le Flocon de Koch</h2>
-        <p>Voici une fractale mathématique parfaite. Ici, ce n'est pas la règle qui change, mais la complexité de la forme elle-même. Observez comment la longueur explose alors que la forme reste confinée dans le même espace.</p>
+        <h2>1. La Transformation : Le Segment de Koch</h2>
+        <p>Avant de voir le flocon entier, regardons comment un simple segment de droite se transforme. Chaque segment est divisé en trois, et le tiers central est remplacé par un triangle. Augmentez les itérations pour voir la courbe se fracturer.</p>
         
-        <canvas id="kochCanvas" width="600" height="400"></canvas>
+        <canvas id="segmentCanvas" width="800" height="300"></canvas>
 
         <div class="controls">
-            <div class="slider-container">
-                <label for="kochIterations">Nombre d'itérations (n) : <span id="kochIterVal">0</span></label>
-                <input type="range" id="kochIterations" min="0" max="6" value="0" step="1">
+            <div class="slider-header">
+                <label>Itérations (n)</label>
+                <span id="segIterVal">0</span>
             </div>
+            <input type="range" id="segmentIterations" min="0" max="6" value="0" step="1">
+            
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="segCountDisplay">1</div>
+                    <div class="stat-label">Nombre de Segments</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value highlight" id="segLengthDisplay">100%</div>
+                    <div class="stat-label">Longueur relative</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <h2>2. L'Infini Borné : Le Flocon de Koch</h2>
+        <p>En appliquant cette transformation sur les trois côtés d'un triangle, on obtient le Flocon. Notez que l'aire reste finie (le flocon tient dans l'écran), mais son périmètre tend vers l'infini.</p>
+        
+        <canvas id="kochCanvas" width="600" height="500"></canvas>
+
+        <div class="controls">
+            <div class="slider-header">
+                <label>Itérations (n)</label>
+                <span id="kochIterVal">0</span>
+            </div>
+            <input type="range" id="kochIterations" min="0" max="5" value="0" step="1">
 
             <div class="stats">
                 <div class="stat-box">
@@ -111,25 +135,25 @@
                     <div class="stat-label">Nombre de segments</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-value highlight" id="kochLengthDisplay">100.00 Unités</div>
-                    <div class="stat-label">Longueur Totale Théorique</div>
+                    <div class="stat-value highlight" id="kochLengthDisplay">100 u</div>
+                    <div class="stat-label">Périmètre Théorique</div>
                 </div>
             </div>
         </div>
     </div>
 
-
     <div class="section-container">
-        <h2>2. La Simulation : L'Île Déchiquetée</h2>
-        <p>Cette île est générée aléatoirement pour être très accidentée. Utilisez le curseur pour changer la taille de votre "règle" (le pas de mesure &epsilon;). Plus la règle est petite, plus elle entre dans les détails.</p>
+        <h2>3. La Simulation : L'Île Aléatoire</h2>
+        <p>Ici, nous mesurons une côte "fractale" générée aléatoirement. Utilisez le curseur pour changer la taille de votre "règle" (le pas de mesure &epsilon;). Observez la courbe rouge (votre mesure) se détacher de la côte bleue (le réel).</p>
         
         <canvas id="islandCanvas" width="600" height="400"></canvas>
 
         <div class="controls">
-            <div class="slider-container">
-                <label for="islandRuler">Taille de la règle (&epsilon;) : <span id="islandRulerVal">80</span> px</label>
-                <input type="range" id="islandRuler" min="5" max="150" value="80" step="1">
+            <div class="slider-header">
+                <label>Taille de la règle (&epsilon;)</label>
+                <span><span id="islandRulerVal">80</span> px</span>
             </div>
+            <input type="range" id="islandRuler" min="5" max="150" value="80" step="1">
 
             <div class="stats">
                 <div class="stat-box">
@@ -137,31 +161,34 @@
                     <div class="stat-label">Longueur Mesurée</div>
                 </div>
                  <div class="stat-box" style="display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9em;">
-                    <div><span style="color:var(--coast-color)">●</span> Côte réelle</div>
-                    <div><span style="color:var(--measure-color)">●</span> Mesure</div>
+                    <button onclick="generateBetterIsland(); runIslandMeasurement();">Générer nouvelle île</button>
                 </div>
             </div>
-             <button onclick="generateBetterIsland(); runIslandMeasurement();" style="margin-top:15px; padding: 8px 15px; background:transparent; border:1px solid var(--accent-color); color:var(--accent-color); border-radius:4px; cursor:pointer;">Générer une nouvelle île</button>
         </div>
     </div>
 
 
      <div class="section-container">
-        <h2>3. Le Cas Réel : La Grande-Bretagne</h2>
-        <p>Application de la même méthode de mesure sur un tracé simplifié des côtes de la Grande-Bretagne. Le paradoxe s'applique aussi à la réalité !</p>
+        <h2>4. Le Cas Réel : La Grande-Bretagne</h2>
+        <p>Le paradoxe appliqué à une vraie carte. Même avec une forme définie, la longueur mesurée dépend entièrement de la précision de votre instrument.</p>
         
-        <canvas id="gbCanvas" width="600" height="600"></canvas>
+        <canvas id="gbCanvas" width="600" height="650"></canvas>
 
         <div class="controls">
-            <div class="slider-container">
-                 <label for="gbRuler">Taille de la règle (&epsilon;) : <span id="gbRulerVal">100</span> km (approx)</label>
-                <input type="range" id="gbRuler" min="15" max="180" value="100" step="1">
+            <div class="slider-header">
+                <label>Taille de la règle (&epsilon;)</label>
+                <span><span id="gbRulerVal">100</span> km (approx)</span>
             </div>
+            <input type="range" id="gbRuler" min="15" max="200" value="100" step="1">
 
             <div class="stats">
                 <div class="stat-box">
                     <div class="stat-value highlight" id="gbLengthDisplay">0 km</div>
-                    <div class="stat-label">Longueur Mesurée (Approx.)</div>
+                    <div class="stat-label">Longueur Mesurée</div>
+                </div>
+                 <div class="stat-box" style="display:flex; flex-direction:column; justify-content:center;">
+                    <div style="font-size:0.8em; color:#888;">Note :</div>
+                    <div style="font-size:0.8em; color:#666;">Les données sont simplifiées pour la fluidité de l'animation.</div>
                 </div>
             </div>
         </div>
@@ -170,145 +197,129 @@
 
     <script>
         /* =========================================
-           UTILITAIRES PARTAGÉS
+           FONCTIONS UTILITAIRES (MATHS)
            ========================================= */
         function dist(p1, p2) {
             return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
         }
 
-        // Fonction générique de mesure (méthode du compas)
-        function genericMeasure(points, rulerLen, ctx, width, height, scaleFactorForDisplay = 1, unit = "px") {
-             if (points.length === 0) return 0;
+        /* Fonction récursive de Koch générique */
+        function getKochPoints(p1, p2, iterations) {
+            if (iterations === 0) return [p1, p2];
+
+            const vX = p2.x - p1.x;
+            const vY = p2.y - p1.y;
             
-            // A. Dessiner la côte "réelle" en arrière-plan
-            ctx.clearRect(0, 0, width, height);
-            ctx.beginPath();
-            // Utilisation de la couleur CSS var(--coast-color)
-            ctx.strokeStyle = "#4895ef"; 
-            ctx.lineWidth = 1.5;
-            ctx.globalAlpha = 0.7;
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let p of points) ctx.lineTo(p.x, p.y);
-            ctx.closePath();
-            ctx.stroke();
-            ctx.globalAlpha = 1.0;
+            // Les 3 points intermédiaires
+            const pA = {x: p1.x + vX/3, y: p1.y + vY/3};
+            const pB = {x: p1.x + 2*vX/3, y: p1.y + 2*vY/3};
+            
+            // Calcul de la pointe (triangle équilatéral)
+            const sin60 = Math.sqrt(3)/2;
+            const cos60 = 0.5;
+            const pTip = {
+                x: pA.x + (pB.x - pA.x) * cos60 - (pB.y - pA.y) * sin60,
+                y: pA.y + (pB.x - pA.x) * sin60 + (pB.y - pA.y) * cos60
+            };
 
-            // B. Algorithme de mesure
-            let mPoints = [points[0]];
-            let currentIdx = 0;
-            let totalLen = 0;
+            // Récursion
+            const seg1 = getKochPoints(p1, pA, iterations - 1);
+            const seg2 = getKochPoints(pA, pTip, iterations - 1);
+            const seg3 = getKochPoints(pTip, pB, iterations - 1);
+            const seg4 = getKochPoints(pB, p2, iterations - 1);
 
-            while (true) {
-                let found = false;
-                // Recherche avant
-                for (let i = currentIdx + 1; i < points.length; i++) {
-                    if (dist(points[currentIdx], points[i]) >= rulerLen) {
-                        totalLen += dist(points[currentIdx], points[i]);
-                        currentIdx = i;
-                        mPoints.push(points[currentIdx]);
-                        found = true;
-                        break;
-                    }
-                }
-                // Si on ne trouve pas, on essaie de fermer la boucle avec le point de départ
-                if (!found) {
-                     let finalD = dist(points[currentIdx], points[0]);
-                     // On ne ferme que si ça a du sens (évite de fermer si on est trop loin)
-                     if(finalD >= rulerLen * 0.5 || mPoints.length > 2) {
-                         totalLen += finalD;
-                         mPoints.push(points[0]);
-                     }
-                    break;
-                }
-            }
-
-            // C. Dessiner la mesure
-            ctx.beginPath();
-            // Utilisation de la couleur CSS var(--measure-color)
-            ctx.strokeStyle = "#f72585";
-            ctx.lineWidth = 2.5;
-            ctx.moveTo(mPoints[0].x, mPoints[0].y);
-            for (let p of mPoints) {
-                ctx.lineTo(p.x, p.y);
-                ctx.fillStyle = "#f72585";
-                ctx.fillRect(p.x - 2.5, p.y - 2.5, 5, 5);
-            }
-            ctx.stroke();
-
-            return Math.round(totalLen * scaleFactorForDisplay) + " " + unit;
+            // On fusionne en évitant les doublons de points de jonction
+            return [...seg1, ...seg2.slice(1), ...seg3.slice(1), ...seg4.slice(1)];
         }
 
 
         /* =========================================
-           PARTIE 1 : FLOCON DE KOCH
+           1. LE SEGMENT DE KOCH (Simple Ligne)
+           ========================================= */
+        const sCanvas = document.getElementById('segmentCanvas');
+        const sCtx = sCanvas.getContext('2d');
+        const sSlider = document.getElementById('segmentIterations');
+        
+        function drawSegment() {
+            const iter = parseInt(sSlider.value);
+            document.getElementById('segIterVal').textContent = iter;
+            
+            sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+            
+            // Définition de la ligne de base (centrée)
+            const start = {x: 50, y: 200};
+            const end = {x: 750, y: 200};
+            
+            const points = getKochPoints(start, end, iter);
+
+            // Dessin
+            sCtx.beginPath();
+            sCtx.strokeStyle = "#4cc9f0";
+            sCtx.lineWidth = 2;
+            sCtx.moveTo(points[0].x, points[0].y);
+            for(let i=1; i<points.length; i++) sCtx.lineTo(points[i].x, points[i].y);
+            sCtx.stroke();
+
+            // Stats
+            const numSeg = Math.pow(4, iter);
+            const lenRatio = Math.pow(4/3, iter) * 100;
+            document.getElementById('segCountDisplay').textContent = new Intl.NumberFormat().format(numSeg);
+            document.getElementById('segLengthDisplay').textContent = lenRatio.toFixed(0) + "%";
+        }
+        sSlider.addEventListener('input', drawSegment);
+        drawSegment();
+
+
+        /* =========================================
+           2. LE FLOCON DE KOCH (Triangle)
            ========================================= */
         const kCanvas = document.getElementById('kochCanvas');
         const kCtx = kCanvas.getContext('2d');
         const kSlider = document.getElementById('kochIterations');
-        const kIterDisplay = document.getElementById('kochIterVal');
         
-        // Triangle initial
-        const p1 = {x: 100, y: 300};
-        const p2 = {x: 500, y: 300};
-        const p3 = {x: 300, y: 300 - 400 * Math.sqrt(3)/2}; // Hauteur du triangle équilatéral
-        let kochSegments = [[p1, p2], [p2, p3], [p3, p1]];
-        const initialPerimeter = dist(p1, p2) * 3;
-
         function drawKoch() {
-            const iterations = parseInt(kSlider.value);
-            kIterDisplay.textContent = iterations;
-            
+            const iter = parseInt(kSlider.value);
+            document.getElementById('kochIterVal').textContent = iter;
             kCtx.clearRect(0,0, kCanvas.width, kCanvas.height);
-            kCtx.strokeStyle = "#4cc9f0"; // Couleur accent
-            kCtx.lineWidth = 2;
+
+            // Triangle initial (réduit et centré pour ne pas dépasser)
+            // Centre canvas: 300, 250. Taille base approx 300.
+            const size = 300;
+            const h = size * Math.sqrt(3)/2;
+            const cx = 300;
+            const cy = 280; // Un peu plus bas car ça grandit vers le haut
+
+            const p1 = {x: cx - size/2, y: cy + h/3};
+            const p2 = {x: cx + size/2, y: cy + h/3};
+            const p3 = {x: cx, y: cy - 2*h/3};
+
+            // On génère les points pour chaque côté
+            const side1 = getKochPoints(p1, p3, iter);
+            const side2 = getKochPoints(p3, p2, iter);
+            const side3 = getKochPoints(p2, p1, iter); // Attention à l'ordre pour fermer
+
+            const allPoints = [...side1, ...side2, ...side3];
+
             kCtx.beginPath();
-
-            // Fonction récursive de dessin
-            function recursiveKoch(a, b, iter) {
-                if (iter === 0) {
-                    kCtx.moveTo(a.x, a.y);
-                    kCtx.lineTo(b.x, b.y);
-                } else {
-                    // Calcul des tiers
-                    const vX = b.x - a.x;
-                    const vY = b.y - a.y;
-                    const pA = {x: a.x + vX/3, y: a.y + vY/3};
-                    const pB = {x: a.x + 2*vX/3, y: a.y + 2*vY/3};
-                    
-                    // Calcul de la pointe (rotation de 60 degrés)
-                    const cos60 = 0.5, sin60 = Math.sqrt(3)/2;
-                    const pTip = {
-                        x: pA.x + (pB.x - pA.x) * cos60 - (pB.y - pA.y) * sin60,
-                        y: pA.y + (pB.x - pA.x) * sin60 + (pB.y - pA.y) * cos60
-                    };
-
-                    recursiveKoch(a, pA, iter - 1);
-                    recursiveKoch(pA, pTip, iter - 1);
-                    recursiveKoch(pTip, pB, iter - 1);
-                    recursiveKoch(pB, b, iter - 1);
-                }
-            }
-
-            // Lancer la récursion sur les 3 côtés initiaux
-            for(let segment of kochSegments) {
-                recursiveKoch(segment[0], segment[1], iterations);
-            }
+            kCtx.strokeStyle = "#4cc9f0";
+            kCtx.lineWidth = 1.5;
+            kCtx.moveTo(allPoints[0].x, allPoints[0].y);
+            for(let p of allPoints) kCtx.lineTo(p.x, p.y);
+            kCtx.closePath();
             kCtx.stroke();
 
-            // Mise à jour des stats théoriques
-            const numSeg = 3 * Math.pow(4, iterations);
-            // Formule : L_n = L_0 * (4/3)^n. On normalise L_0 à 100 pour l'affichage.
-            const theoreticalLen = 100 * Math.pow(4/3, iterations);
-            
+            // Stats
+            const theoreticalLen = 100 * Math.pow(4/3, iter);
+            const numSeg = 3 * Math.pow(4, iter);
             document.getElementById('kochSegmentsDisplay').textContent = new Intl.NumberFormat().format(numSeg);
-            document.getElementById('kochLengthDisplay').textContent = theoreticalLen.toFixed(2) + " Unités";
+            document.getElementById('kochLengthDisplay').textContent = theoreticalLen.toFixed(1) + " u";
         }
         kSlider.addEventListener('input', drawKoch);
         drawKoch();
 
 
         /* =========================================
-           PARTIE 2 : ÎLE DÉCHIQUETÉE (Améliorée)
+           3. L'ÎLE ALÉATOIRE & MESURE
            ========================================= */
         const iCanvas = document.getElementById('islandCanvas');
         const iCtx = iCanvas.getContext('2d');
@@ -319,31 +330,95 @@
             islandPoints = [];
             const centerX = iCanvas.width / 2;
             const centerY = iCanvas.height / 2;
-            const baseRadius = 130;
-            const numPoints = 1500; // Haute résolution
+            const baseRadius = 120;
+            const numPoints = 1200; 
             
-            // On utilise plus de fréquences et des amplitudes plus fortes pour un look plus "sauvage"
-            const seeds = [Math.random(), Math.random(), Math.random(), Math.random(), Math.random()];
+            const seeds = [Math.random(), Math.random(), Math.random(), Math.random()];
             
             for (let i = 0; i < numPoints; i++) {
                 const angle = (Math.PI * 2 * i) / numPoints;
-                // Somme de sinus plus agressive
-                let noise = Math.sin(angle * 3 + seeds[0]) * 35 +
-                            Math.sin(angle * 7 + seeds[1]) * 20 +
-                            Math.sin(angle * 17 + seeds[2]) * 10 +
-                            Math.sin(angle * 31 + seeds[3]) * 5 +
-                            Math.sin(angle * 63 + seeds[4]) * 2; // Haute fréquence pour le "grain"
+                // Génération fractale "noise"
+                let noise = Math.sin(angle * 3 + seeds[0]) * 30 +
+                            Math.sin(angle * 10 + seeds[1]) * 15 +
+                            Math.sin(angle * 25 + seeds[2]) * 8 +
+                            Math.sin(angle * 60 + seeds[3]) * 3;
 
                 const r = baseRadius + noise;
                 islandPoints.push({x: centerX + r * Math.cos(angle), y: centerY + r * Math.sin(angle)});
             }
         }
 
+        // Fonction générique de mesure (compas)
+        function measurePoly(points, rulerLen, ctx, w, h, scale=1, unit="px", filled=false) {
+            if(points.length < 2) return;
+            
+            ctx.clearRect(0,0,w,h);
+
+            // 1. Dessin de la forme réelle
+            ctx.beginPath();
+            if(filled) {
+                ctx.fillStyle = "#1e2a38"; // Remplissage léger carte
+            }
+            ctx.strokeStyle = "#4895ef"; 
+            ctx.lineWidth = 1;
+            
+            ctx.moveTo(points[0].x, points[0].y);
+            for(let p of points) ctx.lineTo(p.x, p.y);
+            ctx.closePath();
+            if(filled) ctx.fill();
+            ctx.stroke();
+
+            // 2. Mesure au compas
+            let mPoints = [points[0]];
+            let currIdx = 0;
+            let totalDist = 0;
+
+            while(true) {
+                let found = false;
+                // Recherche du prochain point à distance 'rulerLen'
+                for(let i = currIdx + 1; i < points.length; i++) {
+                    let d = dist(points[currIdx], points[i]);
+                    if (d >= rulerLen) {
+                        totalDist += d;
+                        mPoints.push(points[i]);
+                        currIdx = i;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if(!found) {
+                    // Fermeture
+                    let dFinal = dist(points[currIdx], points[0]);
+                    if(dFinal > rulerLen * 0.5) { // On ferme si c'est significatif
+                        totalDist += dFinal;
+                        mPoints.push(points[0]);
+                    }
+                    break;
+                }
+            }
+
+            // 3. Dessin de la mesure
+            ctx.beginPath();
+            ctx.strokeStyle = "#f72585";
+            ctx.lineWidth = 2;
+            ctx.moveTo(mPoints[0].x, mPoints[0].y);
+            for(let p of mPoints) {
+                ctx.lineTo(p.x, p.y);
+                // Petit point
+                ctx.fillStyle = "#f72585";
+                ctx.fillRect(p.x-2, p.y-2, 4, 4);
+            }
+            ctx.stroke();
+
+            return Math.round(totalDist * scale) + " " + unit;
+        }
+
         function runIslandMeasurement() {
             const val = parseInt(iSlider.value);
             document.getElementById('islandRulerVal').textContent = val;
-            const resultStr = genericMeasure(islandPoints, val, iCtx, iCanvas.width, iCanvas.height);
-            document.getElementById('islandLengthDisplay').textContent = resultStr;
+            const res = measurePoly(islandPoints, val, iCtx, iCanvas.width, iCanvas.height);
+            document.getElementById('islandLengthDisplay').textContent = res;
         }
 
         iSlider.addEventListener('input', runIslandMeasurement);
@@ -352,51 +427,61 @@
 
 
         /* =========================================
-           PARTIE 3 : GRANDE-BRETAGNE (Données réelles simplifiées)
+           4. LA GRANDE BRETAGNE (Tracé manuel)
            ========================================= */
         const gCanvas = document.getElementById('gbCanvas');
         const gCtx = gCanvas.getContext('2d');
         const gSlider = document.getElementById('gbRuler');
-        
-        // Coordonnées simplifiées et normalisées de la GB pour tenir dans le canvas 600x600
-        // Note: Ceci est une approximation très simplifiée pour la démonstration.
-        const gbRawData = [
-            [309,569],[333,561],[363,556],[384,537],[399,509],[419,492],[449,484],[482,482],[507,470],[524,446],[531,423],[541,402],[560,388],[571,364],[565,338],[550,321],[532,315],[516,306],[514,281],[526,259],[533,234],[534,205],[515,187],[492,175],[467,164],[451,141],[433,122],[410,103],[384,88],[357,76],[328,66],[299,58],[271,54],[245,59],[223,75],[208,96],[199,121],[195,148],[186,173],[170,191],[148,202],[125,212],[108,228],[99,251],[98,278],[105,304],[120,326],[141,341],[164,353],[186,369],[197,392],[196,418],[186,441],[169,459],[146,470],[123,477],[101,489],[87,509],[82,535],[89,559],[106,578],[131,585],[158,581],[184,570],[209,558],[235,549],[262,545],[287,552],[309,569]
-             // Ajout de points intermédiaires pour lisser un peu et améliorer la simulation
-            ,[321,565],[348,558],[373,546],[391,523],[409,500],[434,488],[465,483],[494,476],[515,458],[527,434],[536,412],[550,395],[565,376],[568,351],[557,329],[541,318],[524,310],[515,293],[520,270],[529,246],[533,219],[524,196],[503,181],[479,169],[459,152],[442,131],[421,112],[397,95],[370,82],[342,71],[313,62],[285,56],[258,56],[234,67],[215,85],[203,108],[197,134],[190,160],[178,182],[159,196],[136,207],[116,220],[103,239],[98,264],[101,291],[112,315],[130,333],[152,347],[175,361],[191,380],[196,405],[191,429],[177,450],[157,464],[134,473],[112,483],[94,499],[84,522],[85,547],[97,568],[118,581],[144,583],[171,575],[196,564],[222,553],[248,547],[274,548]
-        ];
-        // Trier pour que le tracé soit dans l'ordre (nécessaire car l'ajout manuel ci-dessus a cassé l'ordre)
-        gbRawData.sort((a,b) => a[0] - b[0]); 
 
+        // Polygone simplifié manuel pour ressembler VRAIMENT à la GB
+        // Coordonnées normalisées (0-100)
+        const gbShape = [
+            {x:30,y:85},{x:40,y:87},{x:50,y:85},{x:60,y:82},{x:75,y:80},{x:85,y:78}, // Sud (Cornwall -> Kent)
+            {x:88,y:75},{x:90,y:70},{x:88,y:65},{x:85,y:62}, // Est Anglia
+            {x:82,y:55},{x:80,y:50},{x:78,y:40},{x:75,y:30}, // Côte Est
+            {x:70,y:20},{x:65,y:10},{x:55,y:5},{x:45,y:5},{x:40,y:10}, // Ecosse Nord
+            {x:35,y:20},{x:30,y:30},{x:35,y:35}, // Ecosse Ouest
+            {x:30,y:40},{x:35,y:45},{x:40,y:48}, // Frontière Ecosse/Ang
+            {x:35,y:50},{x:30,y:55},{x:25,y:60},{x:20,y:58},{x:15,y:62},{x:20,y:68}, // Pays de Galles
+            {x:35,y:65},{x:40,y:70},{x:35,y:75},{x:30,y:80} // Retour vers Cornwall
+        ];
+
+        // On va densifier les points par interpolation linéaire pour que la mesure fonctionne bien
+        // Sinon le "saut" entre deux points du tracé est trop grand pour une petite règle
         let gbPoints = [];
-        // Re-ordonner approximativement pour former une boucle pour la démo (très simplifié)
-        const centerGB = {x:300, y:300};
-        gbRawData.sort((a,b) => {
-            const angA = Math.atan2(a[1]-centerGB.y, a[0]-centerGB.x);
-            const angB = Math.atan2(b[1]-centerGB.y, b[0]-centerGB.x);
-            return angA - angB;
-        });
-        
-        // Conversion des données brutes en objets points
-        for(let p of gbRawData) {
-            // Légère homothétie pour centrer
-            gbPoints.push({x: p[0]*0.9 + 30, y: p[1]*0.9 + 10}); 
+        const scaleX = 5; 
+        const scaleY = 5;
+        const offsetX = 50;
+        const offsetY = 50;
+
+        for(let i=0; i<gbShape.length; i++) {
+            const p1 = gbShape[i];
+            const p2 = gbShape[(i+1)%gbShape.length];
+            
+            // Nombre de sous-points à ajouter entre p1 et p2
+            const steps = 15; 
+            for(let j=0; j<steps; j++) {
+                const t = j/steps;
+                const nx = p1.x + (p2.x - p1.x)*t;
+                const ny = p1.y + (p2.y - p1.y)*t;
+                
+                // Mise à l'échelle pour le canvas 600x650
+                gbPoints.push({
+                    x: nx * scaleX + offsetX, 
+                    y: ny * scaleY + offsetY
+                });
+            }
         }
 
         function runGBMeasurement() {
-            // La règle est en pixels, mais pour l'affichage on fait semblant que ce sont des km
             const rulerPx = parseInt(gSlider.value);
             document.getElementById('gbRulerVal').textContent = rulerPx;
-            
-            // Facteur d'échelle arbitraire : 1 pixel = ~3 km pour cette démo
-            const kmScaleFactor = 3.5; 
-            
-            const resultStr = genericMeasure(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km");
-            document.getElementById('gbLengthDisplay').textContent = resultStr;
+            // 1 pixel = 3km approx pour cette échelle
+            const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, 3.5, "km", true);
+            document.getElementById('gbLengthDisplay').textContent = res;
         }
 
         gSlider.addEventListener('input', runGBMeasurement);
-        // Premier appel après un court délai pour assurer le chargement
         setTimeout(runGBMeasurement, 100);
 
     </script>
