@@ -22,44 +22,53 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 15px; /* Réduit pour mobile */
             margin: 0;
             line-height: 1.6;
         }
 
-        h1 { margin: 40px 0; text-align: center; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-color); }
-        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; color: #fff; }
-        p { color: #aaa; margin-bottom: 20px; }
+        h1 {
+            margin: 30px 0; text-align: center; text-transform: uppercase;
+            letter-spacing: 2px; color: var(--accent-color); font-size: 1.8em;
+        }
+        h2 {
+            border-bottom: 1px solid #333; padding-bottom: 10px;
+            margin-bottom: 20px; color: #fff; font-size: 1.3em;
+        }
+        p { color: #aaa; margin-bottom: 20px; font-size: 0.95em; }
 
         .section-container {
             background: var(--container-bg);
-            padding: 30px;
+            padding: 20px; /* Réduit pour mobile */
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
             max-width: 800px;
             width: 100%;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             border: 1px solid #333;
+            box-sizing: border-box; /* Important pour que le padding ne dépasse pas */
         }
 
         canvas {
             border-radius: 8px;
             background-color: #0a0a0f;
-            width: 100%;
-            height: auto; /* Responsive */
+            width: 100%; /* Prend toute la largeur du conteneur */
+            height: auto; /* Hauteur automatique pour garder le ratio */
             box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
             border: 1px solid #333;
             margin-bottom: 15px;
+            display: block; /* Évite des marges fantômes */
         }
 
         .controls {
             background-color: rgba(255,255,255,0.03);
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
         }
 
         .slider-header {
-            display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; color: var(--accent-color);
+            display: flex; justify-content: space-between; margin-bottom: 10px;
+            font-weight: bold; color: var(--accent-color); font-size: 0.9em;
         }
 
         input[type=range] {
@@ -67,22 +76,35 @@
         }
 
         .stats {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
         }
+        
+        /* Pour le premier cas où il n'y a qu'une seule stat */
+        .stats.single { grid-template-columns: 1fr; }
 
         .stat-box {
-            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; text-align: center; border: 1px solid #444;
+            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;
+            text-align: center; border: 1px solid #444;
         }
 
-        .stat-value { font-size: 1.4em; font-weight: bold; color: #fff; }
+        .stat-value { font-size: 1.2em; font-weight: bold; color: #fff; }
         .stat-value.highlight { color: var(--measure-color); }
-        .stat-label { font-size: 0.75em; color: #777; text-transform: uppercase; margin-top: 5px; }
+        .stat-label { font-size: 0.7em; color: #777; text-transform: uppercase; margin-top: 5px; }
 
         button {
             background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color);
-            padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: 0.3s;
+            padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: 0.3s; width: 100%;
         }
         button:hover { background: var(--accent-color); color: #000; }
+
+        /* --- MEDIA QUERIES POUR MOBILE --- */
+        @media (min-width: 600px) {
+            body { padding: 30px; }
+            .section-container { padding: 30px; }
+            h1 { font-size: 2.2em; }
+            .stat-value { font-size: 1.5em; }
+            button { width: auto; }
+        }
 
     </style>
 </head>
@@ -92,7 +114,7 @@
 
     <div class="section-container">
         <h2>1. La Transformation : Le Segment de Koch</h2>
-        <p>Avant de voir le flocon entier, regardons comment un simple segment de droite se transforme. Chaque segment est divisé en trois, et le tiers central est remplacé par un triangle. Augmentez les itérations pour voir la courbe se fracturer.</p>
+        <p>Chaque segment est divisé en trois, et le tiers central est remplacé par un triangle pointant vers l'extérieur. Augmentez les itérations pour voir la courbe se fracturer et sa longueur augmenter.</p>
         
         <canvas id="segmentCanvas" width="800" height="300"></canvas>
 
@@ -103,14 +125,10 @@
             </div>
             <input type="range" id="segmentIterations" min="0" max="6" value="0" step="1">
             
-            <div class="stats">
+            <div class="stats single">
                 <div class="stat-box">
                     <div class="stat-value" id="segCountDisplay">1</div>
-                    <div class="stat-label">Nombre de Segments</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value highlight" id="segLengthDisplay">100%</div>
-                    <div class="stat-label">Longueur relative</div>
+                    <div class="stat-label">Nombre de Segments totaux</div>
                 </div>
             </div>
         </div>
@@ -118,9 +136,9 @@
 
     <div class="section-container">
         <h2>2. L'Infini Borné : Le Flocon de Koch</h2>
-        <p>En appliquant cette transformation sur les trois côtés d'un triangle, on obtient le Flocon. Notez que l'aire reste finie (le flocon tient dans l'écran), mais son périmètre tend vers l'infini.</p>
+        <p>En appliquant cette transformation sur les trois côtés d'un triangle, on obtient le Flocon. Notez que l'aire reste finie (le flocon tient dans l'écran), mais son périmètre augmente à chaque étape.</p>
         
-        <canvas id="kochCanvas" width="600" height="500"></canvas>
+        <canvas id="kochCanvas" width="600" height="550"></canvas>
 
         <div class="controls">
             <div class="slider-header">
@@ -144,9 +162,9 @@
 
     <div class="section-container">
         <h2>3. La Simulation : L'Île Aléatoire</h2>
-        <p>Ici, nous mesurons une côte "fractale" générée aléatoirement. Utilisez le curseur pour changer la taille de votre "règle" (le pas de mesure &epsilon;). Observez la courbe rouge (votre mesure) se détacher de la côte bleue (le réel).</p>
+        <p>Utilisez le curseur pour changer la taille de votre "règle" (le pas de mesure &epsilon;). Observez la courbe rouge (votre mesure) se détacher de la côte bleue (le réel) quand la règle est trop grande.</p>
         
-        <canvas id="islandCanvas" width="600" height="400"></canvas>
+        <canvas id="islandCanvas" width="600" height="450"></canvas>
 
         <div class="controls">
             <div class="slider-header">
@@ -160,8 +178,8 @@
                     <div class="stat-value highlight" id="islandLengthDisplay">0 px</div>
                     <div class="stat-label">Longueur Mesurée</div>
                 </div>
-                 <div class="stat-box" style="display:flex; align-items:center; justify-content:center; gap:10px; font-size:0.9em;">
-                    <button onclick="generateBetterIsland(); runIslandMeasurement();">Générer nouvelle île</button>
+                 <div class="stat-box" style="display:flex; align-items:center; justify-content:center;">
+                    <button id="newIslandBtn">Générer nouvelle île</button>
                 </div>
             </div>
         </div>
@@ -170,7 +188,7 @@
 
      <div class="section-container">
         <h2>4. Le Cas Réel : La Grande-Bretagne</h2>
-        <p>Le paradoxe appliqué à une vraie carte. Même avec une forme définie, la longueur mesurée dépend entièrement de la précision de votre instrument.</p>
+        <p>Le paradoxe appliqué à une vraie carte. Plus la règle est petite, plus elle entre dans les fjords et les baies, augmentant considérablement le résultat final.</p>
         
         <canvas id="gbCanvas" width="600" height="650"></canvas>
 
@@ -179,16 +197,15 @@
                 <label>Taille de la règle (&epsilon;)</label>
                 <span><span id="gbRulerVal">100</span> km (approx)</span>
             </div>
-            <input type="range" id="gbRuler" min="15" max="200" value="100" step="1">
+            <input type="range" id="gbRuler" min="15" max="180" value="100" step="1">
 
             <div class="stats">
                 <div class="stat-box">
                     <div class="stat-value highlight" id="gbLengthDisplay">0 km</div>
                     <div class="stat-label">Longueur Mesurée</div>
                 </div>
-                 <div class="stat-box" style="display:flex; flex-direction:column; justify-content:center;">
-                    <div style="font-size:0.8em; color:#888;">Note :</div>
-                    <div style="font-size:0.8em; color:#666;">Les données sont simplifiées pour la fluidité de l'animation.</div>
+                 <div class="stat-box" style="display:flex; flex-direction:column; justify-content:center; padding:5px;">
+                    <div style="font-size:0.75em; color:#666; line-height:1.2;">Les données sont simplifiées pour la fluidité de l'animation dans le navigateur.</div>
                 </div>
             </div>
         </div>
@@ -210,16 +227,19 @@
             const vX = p2.x - p1.x;
             const vY = p2.y - p1.y;
             
-            // Les 3 points intermédiaires
+            // Les 3 points intermédiaires sur le segment
             const pA = {x: p1.x + vX/3, y: p1.y + vY/3};
             const pB = {x: p1.x + 2*vX/3, y: p1.y + 2*vY/3};
             
             // Calcul de la pointe (triangle équilatéral)
             const sin60 = Math.sqrt(3)/2;
             const cos60 = 0.5;
+            
+            // CORRECTION ICI : Inversion des signes pour pointer vers l'extérieur
+            // Rotation de -60 degrés (ou +60 selon le repère, mais cela inverse le sens précédent)
             const pTip = {
-                x: pA.x + (pB.x - pA.x) * cos60 - (pB.y - pA.y) * sin60,
-                y: pA.y + (pB.x - pA.x) * sin60 + (pB.y - pA.y) * cos60
+                x: pA.x + (pB.x - pA.x) * cos60 + (pB.y - pA.y) * sin60,
+                y: pA.y - (pB.x - pA.x) * sin60 + (pB.y - pA.y) * cos60
             };
 
             // Récursion
@@ -246,9 +266,12 @@
             
             sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
             
-            // Définition de la ligne de base (centrée)
-            const start = {x: 50, y: 200};
-            const end = {x: 750, y: 200};
+            // Définition dynamique de la ligne de base (responsive)
+            const w = sCanvas.width;
+            const h = sCanvas.height;
+            // On place la ligne en bas (70% de la hauteur) pour laisser la place au triangle de monter
+            const start = {x: w * 0.1, y: h * 0.7}; 
+            const end = {x: w * 0.9, y: h * 0.7};
             
             const points = getKochPoints(start, end, iter);
 
@@ -260,18 +283,17 @@
             for(let i=1; i<points.length; i++) sCtx.lineTo(points[i].x, points[i].y);
             sCtx.stroke();
 
-            // Stats
+            // Stats (Nombre de segments seulement)
             const numSeg = Math.pow(4, iter);
-            const lenRatio = Math.pow(4/3, iter) * 100;
             document.getElementById('segCountDisplay').textContent = new Intl.NumberFormat().format(numSeg);
-            document.getElementById('segLengthDisplay').textContent = lenRatio.toFixed(0) + "%";
         }
         sSlider.addEventListener('input', drawSegment);
+        // On appelle la fonction au chargement
         drawSegment();
 
 
         /* =========================================
-           2. LE FLOCON DE KOCH (Triangle)
+           2. LE FLOCON DE KOCH (Triangle complet)
            ========================================= */
         const kCanvas = document.getElementById('kochCanvas');
         const kCtx = kCanvas.getContext('2d');
@@ -282,21 +304,32 @@
             document.getElementById('kochIterVal').textContent = iter;
             kCtx.clearRect(0,0, kCanvas.width, kCanvas.height);
 
-            // Triangle initial (réduit et centré pour ne pas dépasser)
-            // Centre canvas: 300, 250. Taille base approx 300.
-            const size = 300;
-            const h = size * Math.sqrt(3)/2;
-            const cx = 300;
-            const cy = 280; // Un peu plus bas car ça grandit vers le haut
+            // Définition dynamique du triangle initial (responsive)
+            const w = kCanvas.width;
+            const h = kCanvas.height;
+            // Taille du triangle par rapport à la plus petite dimension du canvas
+            const size = Math.min(w, h) * 0.55; 
+            const heightTri = size * Math.sqrt(3)/2;
+            
+            const cx = w / 2;
+            // On centre verticalement le "bounding box" du flocon final, pas juste le triangle initial
+            const cy = h / 2 + heightTri / 6; 
 
-            const p1 = {x: cx - size/2, y: cy + h/3};
-            const p2 = {x: cx + size/2, y: cy + h/3};
-            const p3 = {x: cx, y: cy - 2*h/3};
+            const p1 = {x: cx - size/2, y: cy - heightTri/3}; // Haut Gauche (si inversé) -> Bas Gauche
+            const p2 = {x: cx + size/2, y: cy - heightTri/3}; // Haut Droite -> Bas Droite
+            const p3 = {x: cx, y: cy + 2*heightTri/3};     // Bas -> Haut Pointe
 
-            // On génère les points pour chaque côté
-            const side1 = getKochPoints(p1, p3, iter);
-            const side2 = getKochPoints(p3, p2, iter);
-            const side3 = getKochPoints(p2, p1, iter); // Attention à l'ordre pour fermer
+            // Comme j'ai inversé la fonction getKochPoints pour qu'elle pointe vers l'extérieur,
+            // je dois définir mon triangle initial "à l'envers" (pointe en bas) pour que le flocon
+            // se développe vers le haut et l'extérieur de manière classique.
+             const p1_inv = {x: cx - size/2, y: cy + heightTri/3}; // Bas Gauche
+             const p2_inv = {x: cx + size/2, y: cy + heightTri/3}; // Bas Droite
+             const p3_inv = {x: cx, y: cy - 2*heightTri/3};       // Haut Pointe
+
+            // On génère les points pour chaque côté dans le sens anti-horaire
+            const side1 = getKochPoints(p1_inv, p2_inv, iter);
+            const side2 = getKochPoints(p2_inv, p3_inv, iter);
+            const side3 = getKochPoints(p3_inv, p1_inv, iter);
 
             const allPoints = [...side1, ...side2, ...side3];
 
@@ -309,6 +342,7 @@
             kCtx.stroke();
 
             // Stats
+            // L_0 est normalisé à 100 unités arbitraires
             const theoreticalLen = 100 * Math.pow(4/3, iter);
             const numSeg = 3 * Math.pow(4, iter);
             document.getElementById('kochSegmentsDisplay').textContent = new Intl.NumberFormat().format(numSeg);
@@ -328,9 +362,14 @@
 
         function generateBetterIsland() {
             islandPoints = [];
-            const centerX = iCanvas.width / 2;
-            const centerY = iCanvas.height / 2;
-            const baseRadius = 120;
+            const w = iCanvas.width;
+            const h = iCanvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            // Rayon de base responsive
+            const baseRadius = Math.min(w, h) * 0.25;
+            // Amplitude du bruit proportionnelle au rayon
+            const noiseAmp = baseRadius * 0.6; 
             const numPoints = 1200; 
             
             const seeds = [Math.random(), Math.random(), Math.random(), Math.random()];
@@ -338,10 +377,10 @@
             for (let i = 0; i < numPoints; i++) {
                 const angle = (Math.PI * 2 * i) / numPoints;
                 // Génération fractale "noise"
-                let noise = Math.sin(angle * 3 + seeds[0]) * 30 +
-                            Math.sin(angle * 10 + seeds[1]) * 15 +
-                            Math.sin(angle * 25 + seeds[2]) * 8 +
-                            Math.sin(angle * 60 + seeds[3]) * 3;
+                let noise = Math.sin(angle * 3 + seeds[0]) * noiseAmp +
+                            Math.sin(angle * 10 + seeds[1]) * (noiseAmp*0.5) +
+                            Math.sin(angle * 25 + seeds[2]) * (noiseAmp*0.25) +
+                            Math.sin(angle * 60 + seeds[3]) * (noiseAmp*0.1);
 
                 const r = baseRadius + noise;
                 islandPoints.push({x: centerX + r * Math.cos(angle), y: centerY + r * Math.sin(angle)});
@@ -360,7 +399,7 @@
                 ctx.fillStyle = "#1e2a38"; // Remplissage léger carte
             }
             ctx.strokeStyle = "#4895ef"; 
-            ctx.lineWidth = 1;
+            ctx.lineWidth = 1.5;
             
             ctx.moveTo(points[0].x, points[0].y);
             for(let p of points) ctx.lineTo(p.x, p.y);
@@ -388,9 +427,10 @@
                 }
                 
                 if(!found) {
-                    // Fermeture
+                    // Tentative de fermeture de la boucle
                     let dFinal = dist(points[currIdx], points[0]);
-                    if(dFinal > rulerLen * 0.5) { // On ferme si c'est significatif
+                    // On ferme seulement si la distance restante est significative pour éviter de fermer trop tôt sur des formes concaves
+                    if(dFinal >= rulerLen * 0.5 || mPoints.length > 3) { 
                         totalDist += dFinal;
                         mPoints.push(points[0]);
                     }
@@ -401,15 +441,20 @@
             // 3. Dessin de la mesure
             ctx.beginPath();
             ctx.strokeStyle = "#f72585";
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 2.5;
             ctx.moveTo(mPoints[0].x, mPoints[0].y);
             for(let p of mPoints) {
                 ctx.lineTo(p.x, p.y);
-                // Petit point
-                ctx.fillStyle = "#f72585";
-                ctx.fillRect(p.x-2, p.y-2, 4, 4);
             }
-            ctx.stroke();
+             ctx.stroke();
+             
+             // Dessiner les points par dessus
+            for(let p of mPoints) {
+                ctx.beginPath();
+                ctx.fillStyle = "#f72585";
+                ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+                ctx.fill();
+            }
 
             return Math.round(totalDist * scale) + " " + unit;
         }
@@ -422,67 +467,114 @@
         }
 
         iSlider.addEventListener('input', runIslandMeasurement);
+        document.getElementById('newIslandBtn').addEventListener('click', () => {
+            generateBetterIsland();
+            runIslandMeasurement();
+        });
         generateBetterIsland();
         runIslandMeasurement();
 
 
         /* =========================================
-           4. LA GRANDE BRETAGNE (Tracé manuel)
+           4. LA GRANDE BRETAGNE (Tracé manuel & Responsive)
            ========================================= */
         const gCanvas = document.getElementById('gbCanvas');
         const gCtx = gCanvas.getContext('2d');
         const gSlider = document.getElementById('gbRuler');
 
-        // Polygone simplifié manuel pour ressembler VRAIMENT à la GB
-        // Coordonnées normalisées (0-100)
-        const gbShape = [
-            {x:30,y:85},{x:40,y:87},{x:50,y:85},{x:60,y:82},{x:75,y:80},{x:85,y:78}, // Sud (Cornwall -> Kent)
-            {x:88,y:75},{x:90,y:70},{x:88,y:65},{x:85,y:62}, // Est Anglia
-            {x:82,y:55},{x:80,y:50},{x:78,y:40},{x:75,y:30}, // Côte Est
-            {x:70,y:20},{x:65,y:10},{x:55,y:5},{x:45,y:5},{x:40,y:10}, // Ecosse Nord
-            {x:35,y:20},{x:30,y:30},{x:35,y:35}, // Ecosse Ouest
-            {x:30,y:40},{x:35,y:45},{x:40,y:48}, // Frontière Ecosse/Ang
-            {x:35,y:50},{x:30,y:55},{x:25,y:60},{x:20,y:58},{x:15,y:62},{x:20,y:68}, // Pays de Galles
-            {x:35,y:65},{x:40,y:70},{x:35,y:75},{x:30,y:80} // Retour vers Cornwall
+        // Polygone simplifié manuel (Coordonnées normalisées 0-100)
+        const gbShapeNormalized = [
+            {x:30,y:85},{x:40,y:87},{x:50,y:85},{x:60,y:82},{x:75,y:80},{x:85,y:78}, 
+            {x:88,y:75},{x:90,y:70},{x:88,y:65},{x:85,y:62}, 
+            {x:82,y:55},{x:80,y:50},{x:78,y:40},{x:75,y:30}, 
+            {x:70,y:20},{x:65,y:10},{x:55,y:5},{x:45,y:5},{x:40,y:10}, 
+            {x:35,y:20},{x:30,y:30},{x:35,y:35}, 
+            {x:30,y:40},{x:35,y:45},{x:40,y:48}, 
+            {x:35,y:50},{x:30,y:55},{x:25,y:60},{x:20,y:58},{x:15,y:62},{x:20,y:68}, 
+            {x:35,y:65},{x:40,y:70},{x:35,y:75},{x:30,y:80} 
         ];
 
-        // On va densifier les points par interpolation linéaire pour que la mesure fonctionne bien
-        // Sinon le "saut" entre deux points du tracé est trop grand pour une petite règle
         let gbPoints = [];
-        const scaleX = 5; 
-        const scaleY = 5;
-        const offsetX = 50;
-        const offsetY = 50;
 
-        for(let i=0; i<gbShape.length; i++) {
-            const p1 = gbShape[i];
-            const p2 = gbShape[(i+1)%gbShape.length];
-            
-            // Nombre de sous-points à ajouter entre p1 et p2
-            const steps = 15; 
-            for(let j=0; j<steps; j++) {
-                const t = j/steps;
-                const nx = p1.x + (p2.x - p1.x)*t;
-                const ny = p1.y + (p2.y - p1.y)*t;
+        // Fonction pour générer les points de la GB à la bonne échelle selon la taille du canvas
+        function generateGBPoints() {
+            gbPoints = [];
+            const w = gCanvas.width;
+            const h = gCanvas.height;
+
+            // On veut que la forme occupe environ 60% de la largeur du canvas
+            const intendedWidth = w * 0.6;
+            // La forme normalisée fait environ 75 unités de large (90-15)
+            const scaleFactor = intendedWidth / 75;
+
+            const scaleX = scaleFactor;
+            const scaleY = scaleFactor;
+            // Centrage
+            // Le centre de la forme normalisée est approx à (55, 45)
+            const offsetX = w/2 - (55 * scaleX);
+            const offsetY = h/2 - (45 * scaleY);
+
+            for(let i=0; i<gbShapeNormalized.length; i++) {
+                const p1 = gbShapeNormalized[i];
+                const p2 = gbShapeNormalized[(i+1)%gbShapeNormalized.length];
                 
-                // Mise à l'échelle pour le canvas 600x650
-                gbPoints.push({
-                    x: nx * scaleX + offsetX, 
-                    y: ny * scaleY + offsetY
-                });
+                // Interpolation pour densifier le tracé (nécessaire pour la mesure)
+                const steps = 20; 
+                for(let j=0; j<steps; j++) {
+                    const t = j/steps;
+                    const nx = p1.x + (p2.x - p1.x)*t;
+                    const ny = p1.y + (p2.y - p1.y)*t;
+                    
+                    gbPoints.push({
+                        x: nx * scaleX + offsetX, 
+                        y: ny * scaleY + offsetY
+                    });
+                }
             }
         }
 
         function runGBMeasurement() {
+            // Si les points n'existent pas encore (premier chargement), on les génère
+            if(gbPoints.length === 0) generateGBPoints();
+
             const rulerPx = parseInt(gSlider.value);
             document.getElementById('gbRulerVal').textContent = rulerPx;
-            // 1 pixel = 3km approx pour cette échelle
-            const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, 3.5, "km", true);
+            
+            // Facteur d'échelle arbitraire pour l'affichage en "km"
+            // Plus le canvas est grand, plus le facteur doit être petit pour garder des valeurs cohérentes
+            const kmScaleFactor = 2000 / gCanvas.width; 
+            
+            const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km", true);
             document.getElementById('gbLengthDisplay').textContent = res;
         }
 
         gSlider.addEventListener('input', runGBMeasurement);
-        setTimeout(runGBMeasurement, 100);
+        
+        // Initialisation différée pour assurer que le canvas a sa taille finale
+        setTimeout(() => {
+             generateGBPoints();
+             runGBMeasurement();
+        }, 200);
+
+
+        /* =========================================
+           GESTION DU REDIMENSIONNEMENT (Mobile)
+           ========================================= */
+        // Quand la fenêtre change de taille, on redessine tout pour s'adapter
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                // On relance les fonctions de dessin principales
+                drawSegment();
+                drawKoch();
+                // Pour l'île et la GB, il faut régénérer les points de base car l'échelle change
+                generateBetterIsland();
+                runIslandMeasurement();
+                generateGBPoints();
+                runGBMeasurement();
+            }, 250); // Petit délai pour ne pas surcharger pendant le redimensionnement
+        });
 
     </script>
 </body>
