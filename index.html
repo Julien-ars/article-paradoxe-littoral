@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Laboratoire Interactif V5</title>
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif V6</title>
     <style>
         /* --- STYLE THEME SOMBRE (CSS) --- */
         :root {
@@ -140,8 +140,8 @@
     </div>
 
     <div class="section-container">
-        <h2>2. L'Infini Borné : La Construction du Flocon</h2>
-        <p>Cette simulation montre les premières étapes de la construction du flocon de Koch. On part d'un triangle, puis on applique la transformation sur chaque côté.</p>
+        <h2>2. L'Infini Borné : La Construction de l'Étoile</h2>
+        <p>Cette simulation montre les premières étapes de la construction d'une fractale en forme d'étoile, similaire à celle de l'image fournie.</p>
         
         <canvas id="customFractalCanvas" width="600" height="600"></canvas>
 
@@ -150,12 +150,12 @@
                 <label>Étape</label>
                 <span id="customIterVal">0</span>
             </div>
-            <input type="range" id="customIterations" min="0" max="3" value="0" step="1">
+            <input type="range" id="customIterations" min="0" max="2" value="0" step="1">
 
             <div class="stats single">
                 <div class="stat-box">
                     <div class="stat-value" id="customStats">Triangle Initial</div>
-                    <div class="stat-label">Description de l'étape</div>
+                    <div class="stat-label">Description</div>
                 </div>
             </div>
         </div>
@@ -293,12 +293,22 @@
 
 
         /* =========================================
-           2. CONSTRUCTION DU FLOCON DE KOCH (Image fournie)
+           2. CONSTRUCTION DE L'ÉTOILE (Image fournie)
            ========================================= */
         const cCanvas = document.getElementById('customFractalCanvas');
         const cCtx = cCanvas.getContext('2d');
         const cSlider = document.getElementById('customIterations');
         const cStats = document.getElementById('customStats');
+
+        function drawTriangle(ctx, x, y, size, rotation, color) {
+            ctx.beginPath();
+            ctx.moveTo(x + size * Math.cos(rotation), y + size * Math.sin(rotation));
+            ctx.lineTo(x + size * Math.cos(rotation + 2 * Math.PI / 3), y + size * Math.sin(rotation + 2 * Math.PI / 3));
+            ctx.lineTo(x + size * Math.cos(rotation + 4 * Math.PI / 3), y + size * Math.sin(rotation + 4 * Math.PI / 3));
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
 
         function drawCustomFractal() {
             const iter = parseInt(cSlider.value);
@@ -307,37 +317,42 @@
 
             const w = cCanvas.width;
             const h = cCanvas.height;
-            const size = Math.min(w, h) * 0.55; 
-            const heightTri = size * Math.sqrt(3)/2;
             const cx = w / 2;
-            const cy = h / 2 + heightTri / 6; 
-
-            // Triangle initial (pointe en bas)
-            const p1 = {x: cx - size/2, y: cy - heightTri/3};
-            const p2 = {x: cx, y: cy + 2*heightTri/3};
-            const p3 = {x: cx + size/2, y: cy - heightTri/3};
-
-            const side1 = getKochPoints(p1, p2, iter);
-            const side2 = getKochPoints(p2, p3, iter);
-            const side3 = getKochPoints(p3, p1, iter);
-
-            const allPoints = [...side1, ...side2, ...side3];
-
-            cCtx.beginPath();
-            cCtx.strokeStyle = "#4cc9f0";
-            cCtx.lineWidth = 2;
-            cCtx.moveTo(allPoints[0].x, allPoints[0].y);
-            for(let p of allPoints) cCtx.lineTo(p.x, p.y);
-            cCtx.closePath();
-            cCtx.stroke();
+            const cy = h / 2;
+            const size1 = Math.min(w, h) * 0.4;
+            const size2 = size1 * 1.2; // Second triangle is slightly larger
+            const size3 = size1 / 3; // Smaller triangles
 
             let description = "";
-            switch(iter) {
-                case 0: description = "Étape 0 : Triangle Équilatéral"; break;
-                case 1: description = "Étape 1 : Étoile à 6 branches"; break;
-                case 2: description = "Étape 2 : Ajout des premières pointes"; break;
-                case 3: description = "Étape 3 : Le Flocon prend forme"; break;
-                default: description = `Étape ${iter}`;
+
+            if (iter >= 0) {
+                // Étape 0: Premier triangle gris clair, pointe en haut
+                drawTriangle(cCtx, cx, cy + size1 / 6, size1, -Math.PI / 2, '#999999');
+                description = "Triangle Initial";
+            }
+
+            if (iter >= 1) {
+                // Étape 1: Deuxième triangle gris foncé, pointe en bas
+                drawTriangle(cCtx, cx, cy - size2 / 6, size2, Math.PI / 2, '#555555');
+                description = "Étoile à Six Branches";
+            }
+
+            if (iter >= 2) {
+                // Étape 2: Petits triangles gris foncé sur les pointes
+                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
+                const distances = [size1, size2, size1, size2, size1, size2];
+                
+                for (let i = 0; i < 6; i++) {
+                    const angle = angles[i];
+                    // Adjust distance and center for the small triangles to sit on the tips
+                    const dist = distances[i];
+                    // The small triangles are centered on the vertices of the previous star
+                    const tx = cx + dist * Math.cos(angle);
+                    const ty = (cy + (i % 2 === 0 ? size1 / 6 : -size2 / 6)) + dist * Math.sin(angle);
+                    // Rotation is opposite to the vertex they are on
+                    drawTriangle(cCtx, tx, ty, size3, angle + Math.PI, '#555555');
+                }
+                description = "Fractale en Étoile";
             }
             cStats.textContent = description;
         }
