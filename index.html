@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Laboratoire Interactif V4</title>
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif V5</title>
     <style>
         /* --- STYLE THEME SOMBRE (CSS) --- */
         :root {
@@ -92,7 +92,6 @@
         
         .stat-label { font-size: 0.7em; color: #777; text-transform: uppercase; margin-top: 5px; }
 
-        /* Nouveau conteneur pour le bouton sous les stats */
         .button-area {
             margin-top: 15px;
             text-align: center;
@@ -104,7 +103,6 @@
         }
         button:hover { background: var(--accent-color); color: #000; }
 
-        /* --- MEDIA QUERIES POUR MOBILE --- */
         @media (min-width: 600px) {
             body { padding: 30px; }
             .section-container { padding: 30px; }
@@ -142,8 +140,8 @@
     </div>
 
     <div class="section-container">
-        <h2>2. L'Infini Borné : La Construction de l'Étoile</h2>
-        <p>Cette simulation montre les premières étapes de la construction d'une fractale en forme d'étoile, similaire à celle de l'image fournie.</p>
+        <h2>2. L'Infini Borné : La Construction du Flocon</h2>
+        <p>Cette simulation montre les premières étapes de la construction du flocon de Koch. On part d'un triangle, puis on applique la transformation sur chaque côté.</p>
         
         <canvas id="customFractalCanvas" width="600" height="600"></canvas>
 
@@ -152,12 +150,12 @@
                 <label>Étape</label>
                 <span id="customIterVal">0</span>
             </div>
-            <input type="range" id="customIterations" min="0" max="2" value="0" step="1">
+            <input type="range" id="customIterations" min="0" max="3" value="0" step="1">
 
             <div class="stats single">
                 <div class="stat-box">
                     <div class="stat-value" id="customStats">Triangle Initial</div>
-                    <div class="stat-label">Description</div>
+                    <div class="stat-label">Description de l'étape</div>
                 </div>
             </div>
         </div>
@@ -228,31 +226,22 @@
             return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
         }
 
-        /* CORRECTION MAJEURE ICI : 
-           Fonction récursive de Koch avec rotation mathématique correcte
-           pour pointer vers l'EXTÉRIEUR (rotation de -60° du vecteur directeur).
-        */
+        /* Fonction récursive de Koch avec rotation correcte vers l'EXTÉRIEUR */
         function getKochPoints(p1, p2, iterations) {
             if (iterations === 0) return [p1, p2];
 
-            // Vecteur P1 -> P2
             const vx = p2.x - p1.x;
             const vy = p2.y - p1.y;
             
-            // Les 3 points intermédiaires sur le segment
             const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
             const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
             
-            // Calcul de la pointe : Rotation du vecteur pA->pB de -60 degrés
-            // cos(-60) = 0.5, sin(-60) = -sqrt(3)/2
             const cosN60 = 0.5;
             const sinN60 = -Math.sqrt(3)/2;
             
-            // Vecteur pA -> pB
             const vABx = pB.x - pA.x;
             const vABy = pB.y - pA.y;
 
-            // Application de la matrice de rotation
             const rotX = vABx * cosN60 - vABy * sinN60;
             const rotY = vABx * sinN60 + vABy * cosN60;
 
@@ -261,7 +250,6 @@
                 y: pA.y + rotY
             };
 
-            // Récursion
             const seg1 = getKochPoints(p1, pA, iterations - 1);
             const seg2 = getKochPoints(pA, pTip, iterations - 1);
             const seg3 = getKochPoints(pTip, pB, iterations - 1);
@@ -281,12 +269,10 @@
         function drawSegment() {
             const iter = parseInt(sSlider.value);
             document.getElementById('segIterVal').textContent = iter;
-            
             sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
             
             const w = sCanvas.width;
             const h = sCanvas.height;
-            // Ligne placée plus bas pour laisser la place à la pointe de monter
             const start = {x: w * 0.1, y: h * 0.75}; 
             const end = {x: w * 0.9, y: h * 0.75};
             
@@ -307,22 +293,12 @@
 
 
         /* =========================================
-           2. CONSTRUCTION DE L'ÉTOILE (Image fournie)
+           2. CONSTRUCTION DU FLOCON DE KOCH (Image fournie)
            ========================================= */
         const cCanvas = document.getElementById('customFractalCanvas');
         const cCtx = cCanvas.getContext('2d');
         const cSlider = document.getElementById('customIterations');
         const cStats = document.getElementById('customStats');
-
-        function drawTriangle(ctx, x, y, size, rotation, color) {
-            ctx.beginPath();
-            ctx.moveTo(x + size * Math.cos(rotation), y + size * Math.sin(rotation));
-            ctx.lineTo(x + size * Math.cos(rotation + 2 * Math.PI / 3), y + size * Math.sin(rotation + 2 * Math.PI / 3));
-            ctx.lineTo(x + size * Math.cos(rotation + 4 * Math.PI / 3), y + size * Math.sin(rotation + 4 * Math.PI / 3));
-            ctx.closePath();
-            ctx.fillStyle = color;
-            ctx.fill();
-        }
 
         function drawCustomFractal() {
             const iter = parseInt(cSlider.value);
@@ -331,42 +307,37 @@
 
             const w = cCanvas.width;
             const h = cCanvas.height;
+            const size = Math.min(w, h) * 0.55; 
+            const heightTri = size * Math.sqrt(3)/2;
             const cx = w / 2;
-            const cy = h / 2;
-            const size1 = Math.min(w, h) * 0.4;
-            const size2 = size1 * 1.2; // Second triangle is slightly larger
-            const size3 = size1 / 3; // Smaller triangles
+            const cy = h / 2 + heightTri / 6; 
+
+            // Triangle initial (pointe en bas)
+            const p1 = {x: cx - size/2, y: cy - heightTri/3};
+            const p2 = {x: cx, y: cy + 2*heightTri/3};
+            const p3 = {x: cx + size/2, y: cy - heightTri/3};
+
+            const side1 = getKochPoints(p1, p2, iter);
+            const side2 = getKochPoints(p2, p3, iter);
+            const side3 = getKochPoints(p3, p1, iter);
+
+            const allPoints = [...side1, ...side2, ...side3];
+
+            cCtx.beginPath();
+            cCtx.strokeStyle = "#4cc9f0";
+            cCtx.lineWidth = 2;
+            cCtx.moveTo(allPoints[0].x, allPoints[0].y);
+            for(let p of allPoints) cCtx.lineTo(p.x, p.y);
+            cCtx.closePath();
+            cCtx.stroke();
 
             let description = "";
-
-            if (iter >= 0) {
-                // Étape 0: Premier triangle gris clair, pointe en haut
-                drawTriangle(cCtx, cx, cy + size1 / 6, size1, -Math.PI / 2, '#999999');
-                description = "Triangle Initial";
-            }
-
-            if (iter >= 1) {
-                // Étape 1: Deuxième triangle gris foncé, pointe en bas
-                drawTriangle(cCtx, cx, cy - size2 / 6, size2, Math.PI / 2, '#555555');
-                description = "Étoile à Six Branches";
-            }
-
-            if (iter >= 2) {
-                // Étape 2: Petits triangles gris foncé sur les pointes
-                const angles = [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2, 5 * Math.PI / 6, 7 * Math.PI / 6];
-                const distances = [size1, size2, size1, size2, size1, size2];
-                
-                for (let i = 0; i < 6; i++) {
-                    const angle = angles[i];
-                    // Adjust distance and center for the small triangles to sit on the tips
-                    const dist = distances[i];
-                    // The small triangles are centered on the vertices of the previous star
-                    const tx = cx + dist * Math.cos(angle);
-                    const ty = (cy + (i % 2 === 0 ? size1 / 6 : -size2 / 6)) + dist * Math.sin(angle);
-                    // Rotation is opposite to the vertex they are on
-                    drawTriangle(cCtx, tx, ty, size3, angle + Math.PI, '#555555');
-                }
-                description = "Fractale en Étoile";
+            switch(iter) {
+                case 0: description = "Étape 0 : Triangle Équilatéral"; break;
+                case 1: description = "Étape 1 : Étoile à 6 branches"; break;
+                case 2: description = "Étape 2 : Ajout des premières pointes"; break;
+                case 3: description = "Étape 3 : Le Flocon prend forme"; break;
+                default: description = `Étape ${iter}`;
             }
             cStats.textContent = description;
         }
@@ -410,7 +381,6 @@
             if(points.length < 2) return;
             ctx.clearRect(0,0,w,h);
 
-            // Dessin forme réelle
             ctx.beginPath();
             if(filled) ctx.fillStyle = "#1e2a38";
             ctx.strokeStyle = "#4895ef"; 
@@ -421,7 +391,6 @@
             if(filled) ctx.fill();
             ctx.stroke();
 
-            // Mesure
             let mPoints = [points[0]];
             let currIdx = 0;
             let totalDist = 0;
@@ -447,7 +416,6 @@
                 }
             }
 
-            // Dessin mesure
             ctx.beginPath();
             ctx.strokeStyle = "#f72585";
             ctx.lineWidth = 2.5;
@@ -465,7 +433,6 @@
 
         function runIslandMeasurement() {
             const val = parseInt(iSlider.value);
-            // Mise à jour des deux affichages (header + boîte)
             document.getElementById('islandRulerValHeader').textContent = val;
             document.getElementById('islandEpsilonDisplay').textContent = val + " px";
 
@@ -527,7 +494,6 @@
             if(gbPoints.length === 0) generateGBPoints();
             const rulerPx = parseInt(gSlider.value);
             
-            // Mise à jour des deux affichages (header + boîte)
             document.getElementById('gbRulerValHeader').textContent = rulerPx;
             document.getElementById('gbEpsilonDisplay').textContent = rulerPx + " km";
             
