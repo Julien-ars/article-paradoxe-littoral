@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Laboratoire Interactif V8</title>
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif V9</title>
     <style>
         /* --- STYLE THEME SOMBRE (CSS) --- */
         :root {
@@ -391,15 +391,46 @@
 
         function measurePoly(points, rulerLen, ctx, w, h, scale=1, unit="px", filled=false) {
             if(points.length < 2) return;
+            
+            // --- DESSIN DU POLYGONE AVEC MOTIF ISOMETRIQUE ---
             ctx.clearRect(0,0,w,h);
             ctx.beginPath();
-            if(filled) ctx.fillStyle = "#1e2a38";
-            ctx.strokeStyle = "#4895ef"; ctx.lineWidth = 1.5;
             ctx.moveTo(points[0].x, points[0].y);
             for(let p of points) ctx.lineTo(p.x, p.y);
             ctx.closePath();
-            if(filled) ctx.fill();
+
+            if(filled) {
+                // Créer le motif isométrique
+                const patternCanvas = document.createElement('canvas');
+                const patternCtx = patternCanvas.getContext('2d');
+                const size = 20; // Taille de la cellule du motif
+                patternCanvas.width = size;
+                patternCanvas.height = size * Math.sqrt(3);
+
+                patternCtx.strokeStyle = '#333'; // Couleur des lignes du motif
+                patternCtx.lineWidth = 1;
+                patternCtx.beginPath();
+                // Lignes verticales
+                patternCtx.moveTo(size / 2, 0);
+                patternCtx.lineTo(size / 2, patternCanvas.height);
+                // Lignes diagonales
+                patternCtx.moveTo(0, size * Math.sqrt(3) / 4);
+                patternCtx.lineTo(size, size * Math.sqrt(3) * 3 / 4);
+                patternCtx.moveTo(size, size * Math.sqrt(3) / 4);
+                patternCtx.lineTo(0, size * Math.sqrt(3) * 3 / 4);
+                patternCtx.stroke();
+
+                const pattern = ctx.createPattern(patternCanvas, 'repeat');
+                ctx.fillStyle = pattern;
+                ctx.fill();
+            } else {
+                 ctx.fillStyle = "#1e2a38"; // Remplissage par défaut pour l'île aléatoire
+                 ctx.fill();
+            }
+            
+            ctx.strokeStyle = "#4895ef"; ctx.lineWidth = 1.5;
             ctx.stroke();
+            // --------------------------------------------------
 
             // Algorithme du compas
             let mPoints = [points[0]];
@@ -455,6 +486,7 @@
             const val = parseInt(iSlider.value);
             document.getElementById('islandRulerValHeader').textContent = val;
             document.getElementById('islandEpsilonDisplay').textContent = val + " px";
+            // filled=false pour ne pas avoir le motif isométrique
             const res = measurePoly(islandPoints, val, iCtx, iCanvas.width, iCanvas.height, 1, "px", false);
             document.getElementById('islandLengthDisplay').textContent = res;
         }
@@ -469,7 +501,7 @@
 
 
         /* =========================================
-           4. LA GRANDE BRETAGNE (Version Réaliste)
+           4. LA GRANDE BRETAGNE (Version Réaliste avec Motif Isométrique)
            ========================================= */
         const gCanvas = document.getElementById('gbCanvas');
         const gCtx = gCanvas.getContext('2d');
@@ -542,6 +574,7 @@
             // Calibrage approximatif : largeur GB ~ 500km -> canvas width
             const kmScaleFactor = 800 / gCanvas.width; 
             
+            // filled=true pour la GB pour activer le motif isométrique
             const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km", true);
             document.getElementById('gbLengthDisplay').textContent = res;
         }
