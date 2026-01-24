@@ -1,598 +1,603 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Paradoxe du Littoral - Laboratoire Interactif V9</title>
-    <style>
-        /* --- STYLE THEME SOMBRE (CSS) --- */
-        :root {
-            --bg-color: #121212;
-            --container-bg: #1e1e24;
-            --text-color: #e0e0e0;
-            --accent-color: #4cc9f0; /* Bleu cyan */
-            --measure-color: #f72585; /* Rose néon */
-            --coast-color: #4895ef; /* Bleu pour la côte */
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Paradoxe du Littoral - Laboratoire Interactif V9</title>
+    <style>
+        /* --- STYLE THEME SOMBRE (CSS) --- */
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e24;
+            --text-color: #e0e0e0;
+            --accent-color: #4cc9f0; /* Bleu cyan */
+            --measure-color: #f72585; /* Rose néon */
+            --coast-color: #4895ef; /* Bleu pour la côte */
+        }
 
-        body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 15px;
-            margin: 0;
-            line-height: 1.6;
-        }
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            margin: 0;
+            line-height: 1.6;
+        }
 
-        h1 {
-            margin: 30px 0; text-align: center; text-transform: uppercase;
-            letter-spacing: 2px; color: var(--accent-color); font-size: 1.8em;
-        }
-        h2 {
-            border-bottom: 1px solid #333; padding-bottom: 10px;
-            margin-bottom: 20px; color: #fff; font-size: 1.3em;
-        }
-        p { color: #aaa; margin-bottom: 20px; font-size: 0.95em; }
+        h1 {
+            margin: 30px 0; text-align: center; text-transform: uppercase;
+            letter-spacing: 2px; color: var(--accent-color); font-size: 1.8em;
+        }
+        h2 {
+            border-bottom: 1px solid #333; padding-bottom: 10px;
+            margin-bottom: 20px; color: #fff; font-size: 1.3em;
+        }
+        p { color: #aaa; margin-bottom: 20px; font-size: 0.95em; }
 
-        .section-container {
-            background: var(--container-bg);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
-            max-width: 800px;
-            width: 100%;
-            margin-bottom: 40px;
-            border: 1px solid #333;
-            box-sizing: border-box;
-        }
+        .section-container {
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 40px;
+            border: 1px solid #333;
+            box-sizing: border-box;
+        }
 
-        canvas {
-            border-radius: 8px;
-            background-color: #0a0a0f;
-            width: 100%;
-            height: auto;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
-            border: 1px solid #333;
-            margin-bottom: 15px;
-            display: block;
-        }
+        canvas {
+            border-radius: 8px;
+            background-color: #0a0a0f;
+            width: 100%;
+            height: auto;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            border: 1px solid #333;
+            margin-bottom: 15px;
+            display: block;
+        }
 
-        .controls {
-            background-color: rgba(255,255,255,0.03);
-            padding: 15px;
-            border-radius: 8px;
-        }
+        .controls {
+            background-color: rgba(255,255,255,0.03);
+            padding: 15px;
+            border-radius: 8px;
+        }
 
-        .slider-header {
-            display: flex; justify-content: space-between; margin-bottom: 10px;
-            font-weight: bold; color: var(--accent-color); font-size: 0.9em;
-        }
+        .slider-header {
+            display: flex; justify-content: space-between; margin-bottom: 10px;
+            font-weight: bold; color: var(--accent-color); font-size: 0.9em;
+        }
 
-        input[type=range] {
-            width: 100%; cursor: pointer; accent-color: var(--accent-color); margin-bottom: 15px;
-        }
+        input[type=range] {
+            width: 100%; cursor: pointer; accent-color: var(--accent-color); margin-bottom: 15px;
+        }
 
-        .stats {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
-        }
-        .stats.single { grid-template-columns: 1fr; }
+        .stats {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
+        }
+        .stats.single { grid-template-columns: 1fr; }
 
-        .stat-box {
-            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;
-            text-align: center; border: 1px solid #444;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-        }
+        .stat-box {
+            background: rgba(0,0,0,0.3); padding: 12px; border-radius: 6px;
+            text-align: center; border: 1px solid #444;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
 
-        .stat-value { font-size: 1.2em; font-weight: bold; color: #fff; }
-        .stat-value.highlight-pink { color: var(--measure-color); }
-        .stat-value.highlight-blue { color: var(--accent-color); }
-        
-        .stat-label { font-size: 0.7em; color: #777; text-transform: uppercase; margin-top: 5px; }
+        .stat-value { font-size: 1.2em; font-weight: bold; color: #fff; }
+        .stat-value.highlight-pink { color: var(--measure-color); }
+        .stat-value.highlight-blue { color: var(--accent-color); }
+        
+        .stat-label { font-size: 0.7em; color: #777; text-transform: uppercase; margin-top: 5px; }
 
-        .button-area {
-            margin-top: 15px;
-            text-align: center;
-        }
+        .button-area {
+            margin-top: 15px;
+            text-align: center;
+        }
 
-        button {
-            background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color);
-            padding: 10px 20px; border-radius: 4px; cursor: pointer; transition: 0.3s; width: 100%; font-weight: bold;
-        }
-        button:hover { background: var(--accent-color); color: #000; }
+        button {
+            background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color);
+            padding: 10px 20px; border-radius: 4px; cursor: pointer; transition: 0.3s; width: 100%; font-weight: bold;
+        }
+        button:hover { background: var(--accent-color); color: #000; }
 
-        @media (min-width: 600px) {
-            body { padding: 30px; }
-            .section-container { padding: 30px; }
-            h1 { font-size: 2.2em; }
-            .stat-value { font-size: 1.5em; }
-            button { width: auto; }
-        }
+        @media (min-width: 600px) {
+            body { padding: 30px; }
+            .section-container { padding: 30px; }
+            h1 { font-size: 2.2em; }
+            .stat-value { font-size: 1.5em; }
+            button { width: auto; }
+        }
 
-    </style>
+    </style>
 </head>
 <body>
 
-    <h1>Laboratoire du Paradoxe du Littoral</h1>
+    <h1>Laboratoire du Paradoxe du Littoral</h1>
 
-    <div class="section-container">
-        <h2>1. La Transformation : Le Segment de Koch</h2>
-        <p>Chaque segment est divisé en trois, et le tiers central est remplacé par un triangle pointant vers l'extérieur. Augmentez les itérations pour voir la courbe se fracturer et sa longueur augmenter.</p>
-        
-        <canvas id="segmentCanvas" width="800" height="350"></canvas>
+    <div class="section-container">
+        <h2>1. La Transformation : Le Segment de Koch</h2>
+        <p>Chaque segment est divisé en trois, et le tiers central est remplacé par un triangle pointant vers l'extérieur. Augmentez les itérations pour voir la courbe se fracturer et sa longueur augmenter.</p>
+        
+        <canvas id="segmentCanvas" width="800" height="350"></canvas>
 
-        <div class="controls">
-            <div class="slider-header">
-                <label>Itérations (n)</label>
-                <span id="segIterVal">0</span>
-            </div>
-            <input type="range" id="segmentIterations" min="0" max="5" value="0" step="1">
+        <div class="controls">
+            <div class="slider-header">
+                <label>Itérations (n)</label>
+                <span id="segIterVal">0</span>
+            </div>
+            <input type="range" id="segmentIterations" min="0" max="5" value="0" step="1">
+            
+            <div class="stats single">
+                <div class="stat-box">
+                    <div class="stat-value" id="segCountDisplay">1</div>
+                    <div class="stat-label">Nombre de Segments totaux</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <h2>2. L'Infini Borné : La Construction en Couches</h2>
+        <p>Voici la construction du flocon étape par étape. Chaque nouvelle itération ajoute une série de triangles sur les côtés existants. Les nouvelles formes sont affichées dans une couleur plus claire.</p>
+        
+        <canvas id="layeredCanvas" width="600" height="600"></canvas>
+
+        <div class="controls">
+            <div class="slider-header">
+                <label>Étape</label>
+                <span id="layeredIterVal">0</span>
+            </div>
+            <input type="range" id="layeredIterations" min="0" max="4" value="0" step="1">
+
+            <div class="stats single">
+                <div class="stat-box">
+                    <div class="stat-value" id="layeredStats">Triangle Initial</div>
+                    <div class="stat-label">Description</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-container">
+        <h2>3. La Simulation : L'Île Aléatoire</h2>
+        <p>Utilisez le curseur pour changer la taille de votre "règle" (le pas de mesure &epsilon;). Observez la courbe rouge (votre mesure) se détacher de la côte bleue (le réel) quand la règle est trop grande.</p>
+        
+        <canvas id="islandCanvas" width="600" height="450"></canvas>
+
+        <div class="controls">
+            <div class="slider-header">
+                <label>Taille de la règle (&epsilon;)</label>
+                <span><span id="islandRulerValHeader">80</span> px</span>
+            </div>
+            <input type="range" id="islandRuler" min="5" max="150" value="80" step="1">
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value highlight-pink" id="islandLengthDisplay">0 px</div>
+                    <div class="stat-label">Longueur Mesurée</div>
+                </div>
+                 <div class="stat-box">
+                    <div class="stat-value highlight-blue" id="islandEpsilonDisplay">80 px</div>
+                    <div class="stat-label">Précision (&epsilon;)</div>
+                </div>
+            </div>
+            <div class="button-area">
+                <button id="newIslandBtn">Générer une nouvelle île</button>
+            </div>
+        </div>
+    </div>
+
+
+     <div class="section-container">
+        <h2>4. Le Cas Réel : La Grande-Bretagne</h2>
+        <p>Le paradoxe appliqué à une vraie carte réaliste. Plus la règle est petite, plus elle entre dans les fjords écossais et les baies galloises, augmentant considérablement le résultat final.</p>
+        
+        <canvas id="gbCanvas" width="600" height="650"></canvas>
+
+        <div class="controls">
+            <div class="slider-header">
+                <label>Taille de la règle (&epsilon;)</label>
+                <span><span id="gbRulerValHeader">100</span> km (approx)</span>
+            </div>
+            <input type="range" id="gbRuler" min="15" max="180" value="100" step="1">
+
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value highlight-pink" id="gbLengthDisplay">0 km</div>
+                    <div class="stat-label">Longueur Mesurée</div>
+                </div>
+                 <div class="stat-box">
+                    <div class="stat-value highlight-blue" id="gbEpsilonDisplay">100 km</div>
+                    <div class="stat-label">Précision (&epsilon;)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        /* =========================================
+           FONCTIONS UTILITAIRES
+           ========================================= */
+        function dist(p1, p2) {
+            return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
+        }
+
+        /* =========================================
+           1. LE SEGMENT DE KOCH
+           ========================================= */
+        const sCanvas = document.getElementById('segmentCanvas');
+        const sCtx = sCanvas.getContext('2d');
+        const sSlider = document.getElementById('segmentIterations');
+        
+        // Fonction locale pour le segment seul qui pointe vers le haut
+        function getSegPointsUp(p1, p2, n) {
+            if (n === 0) return [p1, p2];
+            const vx = p2.x - p1.x, vy = p2.y - p1.y;
+            const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
+            const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
+            // Rotation -60 deg (vers le haut)
+            const c = 0.5, s = -Math.sqrt(3)/2;
+            const vBaseX = pB.x - pA.x, vBaseY = pB.y - pA.y;
+            const tip = {
+                x: pA.x + (vBaseX * c - vBaseY * s),
+                y: pA.y + (vBaseX * s + vBaseY * c)
+            };
+            return [...getSegPointsUp(p1, pA, n-1), ...getSegPointsUp(pA, tip, n-1), ...getSegPointsUp(tip, pB, n-1), ...getSegPointsUp(pB, p2, n-1)];
+        }
+
+        function drawSegment() {
+            const iter = parseInt(sSlider.value);
+            document.getElementById('segIterVal').textContent = iter;
+            sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+            const w = sCanvas.width, h = sCanvas.height;
+            const start = {x: w * 0.1, y: h * 0.75}; 
+            const end = {x: w * 0.9, y: h * 0.75};
+            const points = getSegPointsUp(start, end, iter);
+            sCtx.beginPath();
+            sCtx.strokeStyle = "#4cc9f0";
+            sCtx.lineWidth = 2;
+            sCtx.moveTo(points[0].x, points[0].y);
+            for(let i=1; i<points.length; i++) sCtx.lineTo(points[i].x, points[i].y);
+            sCtx.stroke();
+            const numSeg = Math.pow(4, iter);
+            document.getElementById('segCountDisplay').textContent = new Intl.NumberFormat().format(numSeg);
+        }
+        sSlider.addEventListener('input', drawSegment);
+        drawSegment();
+
+
+        /* =========================================
+           2. CONSTRUCTION EN COUCHES
+           ========================================= */
+        const lCanvas = document.getElementById('layeredCanvas');
+        const lCtx = lCanvas.getContext('2d');
+        const lSlider = document.getElementById('layeredIterations');
+        const lStats = document.getElementById('layeredStats');
+
+        function drawLayered() {
+            const maxIter = parseInt(lSlider.value);
+            document.getElementById('layeredIterVal').textContent = maxIter;
+            lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
+            const w = lCanvas.width, h = lCanvas.height;
+            const size = Math.min(w, h) * 0.55; 
+            const heightTri = size * Math.sqrt(3)/2;
+            const cx = w / 2, cy = h / 2 + heightTri / 6; 
+            
+            const p1 = {x: cx - size/2, y: cy + heightTri/3}; // Bas Gauche
+            const p2 = {x: cx + size/2, y: cy + heightTri/3}; // Bas Droite
+            const p3 = {x: cx, y: cy - 2*heightTri/3};        // Haut Pointe
+
+            let segments = [{a: p1, b: p2}, {a: p2, b: p3}, {a: p3, b: p1}];
+
+            // Base (Iter 0)
+            lCtx.fillStyle = "#2c3e50";
+            lCtx.beginPath();
+            lCtx.moveTo(p1.x, p1.y); lCtx.lineTo(p2.x, p2.y); lCtx.lineTo(p3.x, p3.y);
+            lCtx.closePath(); lCtx.fill();
+            lCtx.strokeStyle = "#4cc9f0"; lCtx.lineWidth = 1; lCtx.stroke();
+
+            // Couches suivantes
+            for (let i = 0; i < maxIter; i++) {
+                let nextSegments = [];
+                const lightness = 40 + (i * 15);
+                lCtx.fillStyle = `hsl(200, 70%, ${lightness}%)`; 
+                lCtx.beginPath(); 
+                for (let seg of segments) {
+                    const u = seg.a, v = seg.b;
+                    const vx = v.x - u.x, vy = v.y - u.y;
+                    const pA = {x: u.x + vx/3, y: u.y + vy/3};
+                    const pB = {x: u.x + 2*vx/3, y: u.y + 2*vy/3};
+                    // Rotation +60 deg (CCW, Y inversé -> extérieur)
+                    const c = 0.5, s = Math.sqrt(3)/2; 
+                    const tipX = pA.x + (pB.x - pA.x)*c - (pB.y - pA.y)*s;
+                    const tipY = pA.y + (pB.x - pA.x)*s + (pB.y - pA.y)*c;
+                    const pTip = {x: tipX, y: tipY};
+                    lCtx.moveTo(pA.x, pA.y); lCtx.lineTo(pB.x, pB.y); lCtx.lineTo(pTip.x, pTip.y); lCtx.lineTo(pA.x, pA.y);
+                    nextSegments.push({a: u, b: pA}); nextSegments.push({a: pA, b: pTip});
+                    nextSegments.push({a: pTip, b: pB}); nextSegments.push({a: pB, b: v});
+                }
+                lCtx.fill(); lCtx.stroke();
+                segments = nextSegments;
+            }
+
+            let desc = "";
+            if(maxIter === 0) desc = "Triangle Initial";
+            else if(maxIter === 1) desc = "Étoile de David (6 branches)";
+            else desc = `Itération ${maxIter} : ${segments.length/4} pointes ajoutées`;
+            lStats.textContent = desc;
+        }
+        lSlider.addEventListener('input', drawLayered);
+        drawLayered();
+
+
+        /* =========================================
+           3. L'ÎLE ALÉATOIRE (Version Corrigée & Organique)
+           ========================================= */
+        const iCanvas = document.getElementById('islandCanvas');
+        const iCtx = iCanvas.getContext('2d');
+        const iSlider = document.getElementById('islandRuler');
+        let islandPoints = [];
+
+        function generateBetterIsland() {
+            islandPoints = [];
+            const w = iCanvas.width; const h = iCanvas.height;
+            const cx = w / 2; const cy = h / 2;
+            
+            // On s'assure que le rayon de base est suffisant
+            const baseRadius = Math.min(w, h) * 0.30; 
+            
+            // Paramètres aléatoires pour cette génération
+            // On crée plusieurs "couches" de bruit
+            const layers = [];
+            const numLayers = 6;
+            
+            for(let j=0; j<numLayers; j++) {
+                layers.push({
+                    freq: 3 + Math.random() * 8 * (j+1), // Fréquence augmente avec la couche
+                    amp: (baseRadius * 0.4) / (j + 1.2), // Amplitude diminue avec la couche
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            const steps = 1500; // Beaucoup de points pour une courbe lisse
+            
+            for (let i = 0; i < steps; i++) {
+                const angle = (Math.PI * 2 * i) / steps;
+                
+                // Calcul du rayon perturbé
+                let noise = 0;
+                for(let l of layers) {
+                    noise += Math.sin(angle * l.freq + l.phase) * l.amp;
+                }
+                
+                // Ajout d'un peu de "jitter" aléatoire haute fréquence pour l'aspect rocheux
+                noise += (Math.random() - 0.5) * 5;
+
+                // IMPORTANT : On s'assure que le rayon ne soit jamais trop petit
+                // pour éviter de croiser le centre.
+                let r = baseRadius + noise;
+                if (r < baseRadius * 0.2) r = baseRadius * 0.2; 
+
+                // Conversion Polaire -> Cartésien
+                const x = cx + r * Math.cos(angle);
+                const y = cy + r * Math.sin(angle);
+                islandPoints.push({x, y});
+            }
+        }
+
+        function measurePoly(points, rulerLen, ctx, w, h, scale=1, unit="px", filled=false) {
+            if(points.length < 2) return;
+            
+            // --- DESSIN DU POLYGONE AVEC MOTIF ISOMETRIQUE ---
+            ctx.clearRect(0,0,w,h);
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for(let p of points) ctx.lineTo(p.x, p.y);
+            ctx.closePath();
+
+            if(filled) {
+                // Créer le motif isométrique
+                const patternCanvas = document.createElement('canvas');
+                const patternCtx = patternCanvas.getContext('2d');
+                const size = 20; // Taille de la cellule du motif
+                patternCanvas.width = size;
+                patternCanvas.height = size * Math.sqrt(3);
+
+                patternCtx.strokeStyle = '#333'; // Couleur des lignes du motif
+                patternCtx.lineWidth = 1;
+                patternCtx.beginPath();
+                // Lignes verticales
+                patternCtx.moveTo(size / 2, 0);
+                patternCtx.lineTo(size / 2, patternCanvas.height);
+                // Lignes diagonales
+                patternCtx.moveTo(0, size * Math.sqrt(3) / 4);
+                patternCtx.lineTo(size, size * Math.sqrt(3) * 3 / 4);
+                patternCtx.moveTo(size, size * Math.sqrt(3) / 4);
+                patternCtx.lineTo(0, size * Math.sqrt(3) * 3 / 4);
+                patternCtx.stroke();
+
+                const pattern = ctx.createPattern(patternCanvas, 'repeat');
+                ctx.fillStyle = pattern;
+                ctx.fill();
+            } else {
+                 ctx.fillStyle = "#1e2a38"; // Remplissage par défaut pour l'île aléatoire
+                 ctx.fill();
+            }
+            
+            ctx.strokeStyle = "#4895ef"; ctx.lineWidth = 1.5;
+            ctx.stroke();
+            // --------------------------------------------------
+
+            // Algorithme du compas
+            let mPoints = [points[0]];
+            let currIdx = 0; let totalDist = 0;
+            
+            // Limite de sécurité pour éviter boucle infinie si règle trop petite
+            let maxSteps = 5000; 
+            let stepsCount = 0;
+
+            while(stepsCount < maxSteps) {
+                stepsCount++;
+                let found = false;
+                // Recherche du prochain point à distance 'rulerLen'
+                for(let i = currIdx + 1; i < points.length; i++) {
+                    let d = dist(points[currIdx], points[i]);
+                    if (d >= rulerLen) {
+                        totalDist += d; mPoints.push(points[i]);
+                        currIdx = i; found = true; break;
+                    }
+                }
+                // Si on ne trouve pas de point avant la fin du tableau
+                if(!found) {
+                    // Vérifier la distance avec le point de départ pour fermer la boucle
+                    let dFinal = dist(points[currIdx], points[0]);
+                    if(dFinal >= rulerLen * 0.5 || mPoints.length > 3) { 
+                        totalDist += dFinal; mPoints.push(points[0]);
+                    }
+                    break;
+                }
+                // Si on est revenu très proche du début (cas rare sur grosse résolution)
+                if (dist(points[currIdx], points[0]) < rulerLen && mPoints.length > 5 && currIdx > points.length - 20) {
+                     totalDist += dist(points[currIdx], points[0]);
+                     mPoints.push(points[0]);
+                     break;
+                }
+            }
+
+            // Dessin de la mesure (rouge)
+            ctx.beginPath(); ctx.strokeStyle = "#f72585"; ctx.lineWidth = 2.5;
+            ctx.moveTo(mPoints[0].x, mPoints[0].y);
+            for(let p of mPoints) ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+            
+            // Dessin des points de mesure
+            for(let p of mPoints) {
+                ctx.beginPath(); ctx.fillStyle = "#f72585";
+                ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+            }
+            return Math.round(totalDist * scale) + " " + unit;
+        }
+
+        function runIslandMeasurement() {
+            const val = parseInt(iSlider.value);
+            document.getElementById('islandRulerValHeader').textContent = val;
+            document.getElementById('islandEpsilonDisplay').textContent = val + " px";
+            // filled=false pour ne pas avoir le motif isométrique
+            const res = measurePoly(islandPoints, val, iCtx, iCanvas.width, iCanvas.height, 1, "px", false);
+            document.getElementById('islandLengthDisplay').textContent = res;
+        }
+
+        iSlider.addEventListener('input', runIslandMeasurement);
+        document.getElementById('newIslandBtn').addEventListener('click', () => {
+            generateBetterIsland();
+            runIslandMeasurement();
+        });
+        generateBetterIsland();
+        runIslandMeasurement();
+
+
+        /* =========================================
+           4. LA GRANDE BRETAGNE (Version Réaliste avec Motif Isométrique)
+           ========================================= */
+        const gCanvas = document.getElementById('gbCanvas');
+        const gCtx = gCanvas.getContext('2d');
+        const gSlider = document.getElementById('gbRuler');
+
+        // Coordonnées SVG simplifiées mais précises de la Grande-Bretagne (format normalisé 0-1000)
+        // Ceci remplace l'ancien modèle imprécis par une vraie forme géographique.
+        const gbPathData = [
+            [514,978],[480,950],[430,952],[380,930],[320,910],[250,905],[190,880],[140,840],[120,790],[130,750],[180,730],[240,735],[310,760],[360,770],[390,750],[380,700],[350,660],[300,620],[240,590],[180,600],[130,630],[80,680],[50,650],[70,590],[110,550],[160,520],[220,500],[280,495],[330,480],[360,450],[350,390],[310,330],[290,270],[300,220],[330,170],[370,130],[430,90],[490,60],[550,40],[610,40],[670,50],[630,100],[590,150],[550,190],[570,240],[610,270],[650,300],[690,330],[740,360],[790,390],[830,430],[860,490],[890,550],[920,610],[930,670],[910,710],[860,730],[820,710],[760,680],[700,660],[640,670],[580,690],[540,730],[530,790],[550,850],[590,890],[650,900],[710,890],[770,860],[830,830],[890,790],[930,770],[960,790],[940,850],[900,890],[850,920],[790,940],[730,955],[660,960],[590,970],[530,980],
+            // Ajout de détails pour simuler la fractalité des côtes (interpolation bruiteuse)
+        ];
+        
+        // On génère une version haute résolution à partir des points clés ci-dessus
+        // en ajoutant du détail fractal intermédiaire
+        let gbPoints = [];
+
+        function interpolateWithNoise(p1, p2, depth, displacement) {
+            if (depth === 0) return [p1];
+            const mx = (p1.x + p2.x) / 2;
+            const my = (p1.y + p2.y) / 2;
+            // Vecteur normal
+            const nx = -(p2.y - p1.y);
+            const ny = (p2.x - p1.x);
+            // Longueur
+            const len = Math.sqrt(nx*nx + ny*ny);
+            // Normalisation + bruit
+            const normX = (nx / len) * (Math.random() - 0.5) * displacement;
+            const normY = (ny / len) * (Math.random() - 0.5) * displacement;
+            
+            const mid = {x: mx + normX, y: my + normY};
+            return [...interpolateWithNoise(p1, mid, depth-1, displacement/2), ...interpolateWithNoise(mid, p2, depth-1, displacement/2)];
+        }
+
+        function generateGBPoints() {
+            gbPoints = [];
+            // CORRECTION ICI : On utilise gbPathData au lieu de l'ancien rawPoints
+            const dataLen = gbPathData.length;
+
+            const w = gCanvas.width;
+            const h = gCanvas.height;
             
-            <div class="stats single">
-                <div class="stat-box">
-                    <div class="stat-value" id="segCountDisplay">1</div>
-                    <div class="stat-label">Nombre de Segments totaux</div>
-                </div>
-            </div>
-        </div>
-    </div>
+            // Les données gbPathData sont sur une base de 1000 unités.
+            // La GB est plus haute que large, on scale par rapport à la hauteur du canvas.
+            const scale = (h * 0.9) / 1000; // 90% de la hauteur du canvas
+            // Centrage approximatif
+            const offsetX = w * 0.05;
+            const offsetY = h * 0.05;
 
-    <div class="section-container">
-        <h2>2. L'Infini Borné : La Construction en Couches</h2>
-        <p>Voici la construction du flocon étape par étape. Chaque nouvelle itération ajoute une série de triangles sur les côtés existants. Les nouvelles formes sont affichées dans une couleur plus claire.</p>
-        
-        <canvas id="layeredCanvas" width="600" height="600"></canvas>
+            // Génération fractale entre les points clés pour le réalisme
+            for(let i=0; i<dataLen; i++) {
+                // Les données sont sous la forme de tableau [x,y], on convertit en objet {x,y}
+                const p1Data = gbPathData[i];
+                const p2Data = gbPathData[(i+1)%dataLen];
 
-        <div class="controls">
-            <div class="slider-header">
-                <label>Étape</label>
-                <span id="layeredIterVal">0</span>
-            </div>
-            <input type="range" id="layeredIterations" min="0" max="4" value="0" step="1">
+                const p1 = {x: p1Data[0] * scale + offsetX, y: p1Data[1] * scale + offsetY};
+                const p2 = {x: p2Data[0] * scale + offsetX, y: p2Data[1] * scale + offsetY};
+                
+                // On interpole avec du bruit pour créer les détails côtiers
+                const segmentPoints = interpolateWithNoise(
+                    p1,
+                    p2,
+                    4, // Profondeur de récursion (détail accru pour la grande carte)
+                    25 // Déplacement max en pixels (augmenté pour l'échelle)
+                );
+                gbPoints.push(...segmentPoints);
+            }
+        }
 
-            <div class="stats single">
-                <div class="stat-box">
-                    <div class="stat-value" id="layeredStats">Triangle Initial</div>
-                    <div class="stat-label">Description</div>
-                </div>
-            </div>
-        </div>
-    </div>
+        function runGBMeasurement() {
+            if(gbPoints.length === 0) generateGBPoints();
+            const rulerPx = parseInt(gSlider.value);
+            document.getElementById('gbRulerValHeader').textContent = rulerPx;
+            document.getElementById('gbEpsilonDisplay').textContent = rulerPx + " km";
+            
+            // Calibrage approximatif : largeur GB ~ 500km -> canvas width
+            const kmScaleFactor = 800 / gCanvas.width; 
+            
+            // filled=true pour la GB pour activer le motif isométrique
+            const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km", true);
+            document.getElementById('gbLengthDisplay').textContent = res;
+        }
 
-    <div class="section-container">
-        <h2>3. La Simulation : L'Île Aléatoire</h2>
-        <p>Utilisez le curseur pour changer la taille de votre "règle" (le pas de mesure &epsilon;). Observez la courbe rouge (votre mesure) se détacher de la côte bleue (le réel) quand la règle est trop grande.</p>
-        
-        <canvas id="islandCanvas" width="600" height="450"></canvas>
+        gSlider.addEventListener('input', runGBMeasurement);
+        
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                drawSegment(); drawLayered();
+                generateBetterIsland(); runIslandMeasurement();
+                generateGBPoints(); runGBMeasurement();
+            }, 250);
+        });
 
-        <div class="controls">
-            <div class="slider-header">
-                <label>Taille de la règle (&epsilon;)</label>
-                <span><span id="islandRulerValHeader">80</span> px</span>
-            </div>
-            <input type="range" id="islandRuler" min="5" max="150" value="80" step="1">
+        setTimeout(() => { generateGBPoints(); runGBMeasurement(); }, 200);
 
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-value highlight-pink" id="islandLengthDisplay">0 px</div>
-                    <div class="stat-label">Longueur Mesurée</div>
-                </div>
-                 <div class="stat-box">
-                    <div class="stat-value highlight-blue" id="islandEpsilonDisplay">80 px</div>
-                    <div class="stat-label">Précision (&epsilon;)</div>
-                </div>
-            </div>
-            <div class="button-area">
-                <button id="newIslandBtn">Générer une nouvelle île</button>
-            </div>
-        </div>
-    </div>
-
-
-     <div class="section-container">
-        <h2>4. Le Cas Réel : La Grande-Bretagne</h2>
-        <p>Le paradoxe appliqué à une vraie carte réaliste. Plus la règle est petite, plus elle entre dans les fjords écossais et les baies galloises, augmentant considérablement le résultat final.</p>
-        
-        <canvas id="gbCanvas" width="600" height="650"></canvas>
-
-        <div class="controls">
-            <div class="slider-header">
-                <label>Taille de la règle (&epsilon;)</label>
-                <span><span id="gbRulerValHeader">100</span> km (approx)</span>
-            </div>
-            <input type="range" id="gbRuler" min="15" max="180" value="100" step="1">
-
-            <div class="stats">
-                <div class="stat-box">
-                    <div class="stat-value highlight-pink" id="gbLengthDisplay">0 km</div>
-                    <div class="stat-label">Longueur Mesurée</div>
-                </div>
-                 <div class="stat-box">
-                    <div class="stat-value highlight-blue" id="gbEpsilonDisplay">100 km</div>
-                    <div class="stat-label">Précision (&epsilon;)</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <script>
-        /* =========================================
-           FONCTIONS UTILITAIRES
-           ========================================= */
-        function dist(p1, p2) {
-            return Math.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2);
-        }
-
-        /* =========================================
-           1. LE SEGMENT DE KOCH
-           ========================================= */
-        const sCanvas = document.getElementById('segmentCanvas');
-        const sCtx = sCanvas.getContext('2d');
-        const sSlider = document.getElementById('segmentIterations');
-        
-        // Fonction locale pour le segment seul qui pointe vers le haut
-        function getSegPointsUp(p1, p2, n) {
-            if (n === 0) return [p1, p2];
-            const vx = p2.x - p1.x, vy = p2.y - p1.y;
-            const pA = {x: p1.x + vx/3, y: p1.y + vy/3};
-            const pB = {x: p1.x + 2*vx/3, y: p1.y + 2*vy/3};
-            // Rotation -60 deg (vers le haut)
-            const c = 0.5, s = -Math.sqrt(3)/2;
-            const vBaseX = pB.x - pA.x, vBaseY = pB.y - pA.y;
-            const tip = {
-                x: pA.x + (vBaseX * c - vBaseY * s),
-                y: pA.y + (vBaseX * s + vBaseY * c)
-            };
-            return [...getSegPointsUp(p1, pA, n-1), ...getSegPointsUp(pA, tip, n-1), ...getSegPointsUp(tip, pB, n-1), ...getSegPointsUp(pB, p2, n-1)];
-        }
-
-        function drawSegment() {
-            const iter = parseInt(sSlider.value);
-            document.getElementById('segIterVal').textContent = iter;
-            sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
-            const w = sCanvas.width, h = sCanvas.height;
-            const start = {x: w * 0.1, y: h * 0.75}; 
-            const end = {x: w * 0.9, y: h * 0.75};
-            const points = getSegPointsUp(start, end, iter);
-            sCtx.beginPath();
-            sCtx.strokeStyle = "#4cc9f0";
-            sCtx.lineWidth = 2;
-            sCtx.moveTo(points[0].x, points[0].y);
-            for(let i=1; i<points.length; i++) sCtx.lineTo(points[i].x, points[i].y);
-            sCtx.stroke();
-            const numSeg = Math.pow(4, iter);
-            document.getElementById('segCountDisplay').textContent = new Intl.NumberFormat().format(numSeg);
-        }
-        sSlider.addEventListener('input', drawSegment);
-        drawSegment();
-
-
-        /* =========================================
-           2. CONSTRUCTION EN COUCHES
-           ========================================= */
-        const lCanvas = document.getElementById('layeredCanvas');
-        const lCtx = lCanvas.getContext('2d');
-        const lSlider = document.getElementById('layeredIterations');
-        const lStats = document.getElementById('layeredStats');
-
-        function drawLayered() {
-            const maxIter = parseInt(lSlider.value);
-            document.getElementById('layeredIterVal').textContent = maxIter;
-            lCtx.clearRect(0, 0, lCanvas.width, lCanvas.height);
-            const w = lCanvas.width, h = lCanvas.height;
-            const size = Math.min(w, h) * 0.55; 
-            const heightTri = size * Math.sqrt(3)/2;
-            const cx = w / 2, cy = h / 2 + heightTri / 6; 
-            
-            const p1 = {x: cx - size/2, y: cy + heightTri/3}; // Bas Gauche
-            const p2 = {x: cx + size/2, y: cy + heightTri/3}; // Bas Droite
-            const p3 = {x: cx, y: cy - 2*heightTri/3};        // Haut Pointe
-
-            let segments = [{a: p1, b: p2}, {a: p2, b: p3}, {a: p3, b: p1}];
-
-            // Base (Iter 0)
-            lCtx.fillStyle = "#2c3e50";
-            lCtx.beginPath();
-            lCtx.moveTo(p1.x, p1.y); lCtx.lineTo(p2.x, p2.y); lCtx.lineTo(p3.x, p3.y);
-            lCtx.closePath(); lCtx.fill();
-            lCtx.strokeStyle = "#4cc9f0"; lCtx.lineWidth = 1; lCtx.stroke();
-
-            // Couches suivantes
-            for (let i = 0; i < maxIter; i++) {
-                let nextSegments = [];
-                const lightness = 40 + (i * 15);
-                lCtx.fillStyle = `hsl(200, 70%, ${lightness}%)`; 
-                lCtx.beginPath(); 
-                for (let seg of segments) {
-                    const u = seg.a, v = seg.b;
-                    const vx = v.x - u.x, vy = v.y - u.y;
-                    const pA = {x: u.x + vx/3, y: u.y + vy/3};
-                    const pB = {x: u.x + 2*vx/3, y: u.y + 2*vy/3};
-                    // Rotation +60 deg (CCW, Y inversé -> extérieur)
-                    const c = 0.5, s = Math.sqrt(3)/2; 
-                    const tipX = pA.x + (pB.x - pA.x)*c - (pB.y - pA.y)*s;
-                    const tipY = pA.y + (pB.x - pA.x)*s + (pB.y - pA.y)*c;
-                    const pTip = {x: tipX, y: tipY};
-                    lCtx.moveTo(pA.x, pA.y); lCtx.lineTo(pB.x, pB.y); lCtx.lineTo(pTip.x, pTip.y); lCtx.lineTo(pA.x, pA.y);
-                    nextSegments.push({a: u, b: pA}); nextSegments.push({a: pA, b: pTip});
-                    nextSegments.push({a: pTip, b: pB}); nextSegments.push({a: pB, b: v});
-                }
-                lCtx.fill(); lCtx.stroke();
-                segments = nextSegments;
-            }
-
-            let desc = "";
-            if(maxIter === 0) desc = "Triangle Initial";
-            else if(maxIter === 1) desc = "Étoile de David (6 branches)";
-            else desc = `Itération ${maxIter} : ${segments.length/4} pointes ajoutées`;
-            lStats.textContent = desc;
-        }
-        lSlider.addEventListener('input', drawLayered);
-        drawLayered();
-
-
-        /* =========================================
-           3. L'ÎLE ALÉATOIRE (Version Corrigée & Organique)
-           ========================================= */
-        const iCanvas = document.getElementById('islandCanvas');
-        const iCtx = iCanvas.getContext('2d');
-        const iSlider = document.getElementById('islandRuler');
-        let islandPoints = [];
-
-        function generateBetterIsland() {
-            islandPoints = [];
-            const w = iCanvas.width; const h = iCanvas.height;
-            const cx = w / 2; const cy = h / 2;
-            
-            // On s'assure que le rayon de base est suffisant
-            const baseRadius = Math.min(w, h) * 0.30; 
-            
-            // Paramètres aléatoires pour cette génération
-            // On crée plusieurs "couches" de bruit
-            const layers = [];
-            const numLayers = 6;
-            
-            for(let j=0; j<numLayers; j++) {
-                layers.push({
-                    freq: 3 + Math.random() * 8 * (j+1), // Fréquence augmente avec la couche
-                    amp: (baseRadius * 0.4) / (j + 1.2), // Amplitude diminue avec la couche
-                    phase: Math.random() * Math.PI * 2
-                });
-            }
-
-            const steps = 1500; // Beaucoup de points pour une courbe lisse
-            
-            for (let i = 0; i < steps; i++) {
-                const angle = (Math.PI * 2 * i) / steps;
-                
-                // Calcul du rayon perturbé
-                let noise = 0;
-                for(let l of layers) {
-                    noise += Math.sin(angle * l.freq + l.phase) * l.amp;
-                }
-                
-                // Ajout d'un peu de "jitter" aléatoire haute fréquence pour l'aspect rocheux
-                noise += (Math.random() - 0.5) * 5;
-
-                // IMPORTANT : On s'assure que le rayon ne soit jamais trop petit
-                // pour éviter de croiser le centre.
-                let r = baseRadius + noise;
-                if (r < baseRadius * 0.2) r = baseRadius * 0.2; 
-
-                // Conversion Polaire -> Cartésien
-                const x = cx + r * Math.cos(angle);
-                const y = cy + r * Math.sin(angle);
-                islandPoints.push({x, y});
-            }
-        }
-
-        function measurePoly(points, rulerLen, ctx, w, h, scale=1, unit="px", filled=false) {
-            if(points.length < 2) return;
-            
-            // --- DESSIN DU POLYGONE AVEC MOTIF ISOMETRIQUE ---
-            ctx.clearRect(0,0,w,h);
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for(let p of points) ctx.lineTo(p.x, p.y);
-            ctx.closePath();
-
-            if(filled) {
-                // Créer le motif isométrique
-                const patternCanvas = document.createElement('canvas');
-                const patternCtx = patternCanvas.getContext('2d');
-                const size = 20; // Taille de la cellule du motif
-                patternCanvas.width = size;
-                patternCanvas.height = size * Math.sqrt(3);
-
-                patternCtx.strokeStyle = '#333'; // Couleur des lignes du motif
-                patternCtx.lineWidth = 1;
-                patternCtx.beginPath();
-                // Lignes verticales
-                patternCtx.moveTo(size / 2, 0);
-                patternCtx.lineTo(size / 2, patternCanvas.height);
-                // Lignes diagonales
-                patternCtx.moveTo(0, size * Math.sqrt(3) / 4);
-                patternCtx.lineTo(size, size * Math.sqrt(3) * 3 / 4);
-                patternCtx.moveTo(size, size * Math.sqrt(3) / 4);
-                patternCtx.lineTo(0, size * Math.sqrt(3) * 3 / 4);
-                patternCtx.stroke();
-
-                const pattern = ctx.createPattern(patternCanvas, 'repeat');
-                ctx.fillStyle = pattern;
-                ctx.fill();
-            } else {
-                 ctx.fillStyle = "#1e2a38"; // Remplissage par défaut pour l'île aléatoire
-                 ctx.fill();
-            }
-            
-            ctx.strokeStyle = "#4895ef"; ctx.lineWidth = 1.5;
-            ctx.stroke();
-            // --------------------------------------------------
-
-            // Algorithme du compas
-            let mPoints = [points[0]];
-            let currIdx = 0; let totalDist = 0;
-            
-            // Limite de sécurité pour éviter boucle infinie si règle trop petite
-            let maxSteps = 5000; 
-            let stepsCount = 0;
-
-            while(stepsCount < maxSteps) {
-                stepsCount++;
-                let found = false;
-                // Recherche du prochain point à distance 'rulerLen'
-                for(let i = currIdx + 1; i < points.length; i++) {
-                    let d = dist(points[currIdx], points[i]);
-                    if (d >= rulerLen) {
-                        totalDist += d; mPoints.push(points[i]);
-                        currIdx = i; found = true; break;
-                    }
-                }
-                // Si on ne trouve pas de point avant la fin du tableau
-                if(!found) {
-                    // Vérifier la distance avec le point de départ pour fermer la boucle
-                    let dFinal = dist(points[currIdx], points[0]);
-                    if(dFinal >= rulerLen * 0.5 || mPoints.length > 3) { 
-                        totalDist += dFinal; mPoints.push(points[0]);
-                    }
-                    break;
-                }
-                // Si on est revenu très proche du début (cas rare sur grosse résolution)
-                if (dist(points[currIdx], points[0]) < rulerLen && mPoints.length > 5 && currIdx > points.length - 20) {
-                     totalDist += dist(points[currIdx], points[0]);
-                     mPoints.push(points[0]);
-                     break;
-                }
-            }
-
-            // Dessin de la mesure (rouge)
-            ctx.beginPath(); ctx.strokeStyle = "#f72585"; ctx.lineWidth = 2.5;
-            ctx.moveTo(mPoints[0].x, mPoints[0].y);
-            for(let p of mPoints) ctx.lineTo(p.x, p.y);
-            ctx.stroke();
-            
-            // Dessin des points de mesure
-            for(let p of mPoints) {
-                ctx.beginPath(); ctx.fillStyle = "#f72585";
-                ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
-            }
-            return Math.round(totalDist * scale) + " " + unit;
-        }
-
-        function runIslandMeasurement() {
-            const val = parseInt(iSlider.value);
-            document.getElementById('islandRulerValHeader').textContent = val;
-            document.getElementById('islandEpsilonDisplay').textContent = val + " px";
-            // filled=false pour ne pas avoir le motif isométrique
-            const res = measurePoly(islandPoints, val, iCtx, iCanvas.width, iCanvas.height, 1, "px", false);
-            document.getElementById('islandLengthDisplay').textContent = res;
-        }
-
-        iSlider.addEventListener('input', runIslandMeasurement);
-        document.getElementById('newIslandBtn').addEventListener('click', () => {
-            generateBetterIsland();
-            runIslandMeasurement();
-        });
-        generateBetterIsland();
-        runIslandMeasurement();
-
-
-        /* =========================================
-           4. LA GRANDE BRETAGNE (Version Réaliste avec Motif Isométrique)
-           ========================================= */
-        const gCanvas = document.getElementById('gbCanvas');
-        const gCtx = gCanvas.getContext('2d');
-        const gSlider = document.getElementById('gbRuler');
-
-        // Coordonnées SVG simplifiées mais précises de la Grande-Bretagne (format normalisé 0-1000)
-        // Ceci remplace l'ancien modèle imprécis par une vraie forme géographique.
-        const gbPathData = [
-            [514,978],[480,950],[430,952],[380,930],[320,910],[250,905],[190,880],[140,840],[120,790],[130,750],[180,730],[240,735],[310,760],[360,770],[390,750],[380,700],[350,660],[300,620],[240,590],[180,600],[130,630],[80,680],[50,650],[70,590],[110,550],[160,520],[220,500],[280,495],[330,480],[360,450],[350,390],[310,330],[290,270],[300,220],[330,170],[370,130],[430,90],[490,60],[550,40],[610,40],[670,50],[630,100],[590,150],[550,190],[570,240],[610,270],[650,300],[690,330],[740,360],[790,390],[830,430],[860,490],[890,550],[920,610],[930,670],[910,710],[860,730],[820,710],[760,680],[700,660],[640,670],[580,690],[540,730],[530,790],[550,850],[590,890],[650,900],[710,890],[770,860],[830,830],[890,790],[930,770],[960,790],[940,850],[900,890],[850,920],[790,940],[730,955],[660,960],[590,970],[530,980],
-            // Ajout de détails pour simuler la fractalité des côtes (interpolation bruiteuse)
-        ];
-        
-        // On génère une version haute résolution à partir des points clés ci-dessus
-        // en ajoutant du détail fractal intermédiaire
-        let gbPoints = [];
-
-        function interpolateWithNoise(p1, p2, depth, displacement) {
-            if (depth === 0) return [p1];
-            const mx = (p1.x + p2.x) / 2;
-            const my = (p1.y + p2.y) / 2;
-            // Vecteur normal
-            const nx = -(p2.y - p1.y);
-            const ny = (p2.x - p1.x);
-            // Longueur
-            const len = Math.sqrt(nx*nx + ny*ny);
-            // Normalisation + bruit
-            const normX = (nx / len) * (Math.random() - 0.5) * displacement;
-            const normY = (ny / len) * (Math.random() - 0.5) * displacement;
-            
-            const mid = {x: mx + normX, y: my + normY};
-            return [...interpolateWithNoise(p1, mid, depth-1, displacement/2), ...interpolateWithNoise(mid, p2, depth-1, displacement/2)];
-        }
-
-        function generateGBPoints() {
-            gbPoints = [];
-            const rawPoints = [
-                {x:50, y:95},{x:45, y:92},{x:40, y:92},{x:35, y:90},{x:30, y:88},{x:25, y:88},{x:20, y:86},{x:15, y:82},{x:12, y:78},{x:14, y:74},{x:20, y:72},{x:28, y:73},{x:34, y:75},{x:38, y:75},{x:39, y:72},{x:38, y:68},{x:35, y:64},{x:30, y:60},{x:25, y:58},{x:20, y:59},{x:15, y:62},{x:10, y:66},{x:5, y:64},{x:6, y:58},{x:10, y:54},{x:16, y:51},{x:22, y:49},{x:28, y:48},{x:32, y:46},{x:35, y:42},{x:34, y:36},{x:30, y:30},{x:28, y:24},{x:29, y:18},{x:34, y:14},{x:40, y:10},{x:48, y:6},{x:56, y:4},{x:64, y:4},{x:68, y:8},{x:64, y:12},{x:60, y:16},{x:56, y:20},{x:58, y:24},{x:62, y:27},{x:66, y:30},{x:72, y:33},{x:78, y:36},{x:82, y:40},{x:86, y:46},{x:89, y:52},{x:92, y:58},{x:93, y:64},{x:91, y:69},{x:86, y:71},{x:80, y:69},{x:74, y:66},{x:68, y:65},{x:62, y:66},{x:58, y:69},{x:55, y:74},{x:56, y:80},{x:60, y:86},{x:66, y:88},{x:74, y:86},{x:82, y:83},{x:88, y:79},{x:94, y:76},{x:97, y:79},{x:95, y:84},{x:90, y:88},{x:84, y:91},{x:76, y:93},{x:68, y:94},{x:60, y:95}
-            ]; // Forme approximative "main levée" normalisée 0-100
-
-            // Facteur d'échelle
-            const w = gCanvas.width;
-            const h = gCanvas.height;
-            const scale = w * 0.75 / 100;
-            const offsetX = w * 0.15;
-            const offsetY = h * 0.05;
-
-            // Génération fractale entre les points clés pour le réalisme
-            for(let i=0; i<rawPoints.length; i++) {
-                const p1 = rawPoints[i];
-                const p2 = rawPoints[(i+1)%rawPoints.length];
-                
-                // On interpole 3 niveaux de détails entre chaque point clé
-                // Cela crée des centaines de micro-baies et caps
-                const segmentPoints = interpolateWithNoise(
-                    {x: p1.x * scale + offsetX, y: p1.y * scale + offsetY},
-                    {x: p2.x * scale + offsetX, y: p2.y * scale + offsetY},
-                    3, // Profondeur de récursion (détail)
-                    15 // Déplacement max en pixels
-                );
-                gbPoints.push(...segmentPoints);
-            }
-        }
-
-        function runGBMeasurement() {
-            if(gbPoints.length === 0) generateGBPoints();
-            const rulerPx = parseInt(gSlider.value);
-            document.getElementById('gbRulerValHeader').textContent = rulerPx;
-            document.getElementById('gbEpsilonDisplay').textContent = rulerPx + " km";
-            
-            // Calibrage approximatif : largeur GB ~ 500km -> canvas width
-            const kmScaleFactor = 800 / gCanvas.width; 
-            
-            // filled=true pour la GB pour activer le motif isométrique
-            const res = measurePoly(gbPoints, rulerPx, gCtx, gCanvas.width, gCanvas.height, kmScaleFactor, "km", true);
-            document.getElementById('gbLengthDisplay').textContent = res;
-        }
-
-        gSlider.addEventListener('input', runGBMeasurement);
-        
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                drawSegment(); drawLayered();
-                generateBetterIsland(); runIslandMeasurement();
-                generateGBPoints(); runGBMeasurement();
-            }, 250);
-        });
-
-        setTimeout(() => { generateGBPoints(); runGBMeasurement(); }, 200);
-
-    </script>
+    </script>
 </body>
 </html>
